@@ -33,9 +33,9 @@ To test with an existing model:
 Or, you can use your own dataset by:
 
     $ mkdir data/YOUR_DATASET
-    ... add images to data/DATASET_NAME ...
-    $ python trainer.py --dataset YOUR_DATASET --input_height h --input_width w
-    $ python evaler.py --dataset YOUR_DATASET --input_height h --input_width w
+    ... add images to data/YOUR_DATASET ...
+    $ python trainer.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
+    $ python evaler.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
 
 ## Results
 <!--
@@ -70,7 +70,7 @@ Details of the histogram of true and fake result of discriminator (MNIST dataset
 
 ## Training tricks
 
-To avoid the fast convergence of D (discriminator) network, G (generator) network is updated twice for each D network update, which differs from original paper.
+-   To avoid the fast convergence of D (discriminator) network, G (generator) network is updated twice for each D network update, which differs from original paper.
 
 ## Author
 

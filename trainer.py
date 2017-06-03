@@ -243,6 +243,11 @@ def main():
     parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist'])
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--update_rate', type=int, default=1)
+    """
+    parser.add_argument('--input_height', type=int, default=28)
+    parser.add_argument('--input_width', type=int, default=28)
+    parser.add_argument('--num_class', type=int, default=10)
+    """
     config = parser.parse_args()
 
     if config.dataset == 'mnist':
