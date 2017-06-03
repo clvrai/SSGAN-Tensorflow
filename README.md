@@ -58,7 +58,7 @@ MNIST codes are written by [@PhoenixDai](https://github.com/PhoenixDai).
 
 ### CIFAR10
 
-More results can be found [here](./assets/) and [here](./web/img/).
+More results can be found [here](#) and [here](#).
 
 ## Training details
 
@@ -78,7 +78,7 @@ Details of the histogram of true and fake result of Discriminator (MNIST dataset
 ## Training tricks
 
 -   To avoid the fast convergence of D (discriminator) network, G (generator) network is updated twice for each D network update, which differs from original paper.
--   one-side label smoothing is applied
+-   One-side label smoothing is applied
 
 ## Author
 
