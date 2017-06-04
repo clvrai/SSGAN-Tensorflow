@@ -144,6 +144,9 @@ class Model(object):
         tf.summary.scalar("loss/g_loss", tf.reduce_mean(self.g_loss))
         for i in range(min(4, self.batch_size)):
             tf.summary.image("generated_img/"+str(i), 
-                tf.expand_dims(
-                tf.expand_dims(tf.reshape(fake_image[i, :], shape=[h, w]), dim=0), dim=-1))
+                tf.expand_dims(tf.expand_dims(
+                    tf.reshape(fake_image[i, :], shape=[h, w]), dim=0), dim=-1))
+        tf.summary.image("real_img/0", 
+            tf.expand_dims(tf.expand_dims(
+                tf.reshape(self.image[0, :], shape=[h, w]), dim=0), dim=-1))
         print ('\033[93mSuccessfully loaded the model.\033[0m')
