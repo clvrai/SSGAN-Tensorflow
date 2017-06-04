@@ -67,11 +67,8 @@ Details of the histogram of real and fake results of Discriminator.
 * To avoid the fast convergence of D (discriminator) network, G (generator) network is updated more frequently.
 * One-sided label smoothing is applied to the positive labels.
 
-## Related works
+## Related articles
 * [Unsupervised and Semi-supervised Learning with Categorical Generative Adversarial Networks](https://arxiv.org/abs/1511.06390) by Springenberg
 * [Semi-Supervised Learning with Generative Adversarial Networks](https://arxiv.org/abs/1606.01583) by Odena
 * [Good Semi-supervised Learning that Requires a Bad GAN](https://arxiv.org/abs/1705.09783) by Dai *et. al.*
 
-## Author
-
-Shao-Hua Sun / [@shaohua0116](http://shaohua0116.github.io/)
