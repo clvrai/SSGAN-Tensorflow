@@ -4,11 +4,11 @@ This is my [Tensorflow](https://www.tensorflow.org/) implementation of **Semi-su
 
 In sum, **the main idea** is training a network playing the roles of both a classifier performing image classification task as well as a discriminator trained to distinguish samples from the generator distribution from real data. To be more specific, the classifier/disciminator takes an image as input and classified it into $n+1$ class, where $n$ is the number of classes of a classification task. True samples are classified into the first $n$ classes and generated samples are classified into the $n+1$-th class Therefore, the loss of this multi-task learning framework can be decomposed into the **supervised loss** 
 
-<img src="figure/s_loss.pdf" alt="Drawing" style="height: 20px;"/>, 
+<img src="figure/s_loss.png" alt="Drawing" style="height: 20px;"/>, 
 
 and the **GAN loss** of a discriminator
 
-<img src="figure/gan_loss.pdf" alt="Drawing" style="height: 20px;"/>.
+<img src="figure/gan_loss.png" alt="Drawing" style="height: 20px;"/>.
 
 During the training phase, we jointly minimze the total loss obtained by simply combining the two losses together.
 
