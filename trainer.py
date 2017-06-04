@@ -176,11 +176,11 @@ class Trainer(object):
 
         batch_chunk = self.session.run(batch)
 
-        if step%(self.config.update_rate+1) > 0:
+        if step%(self.config.update_rate+1) > 10:
         # Train the generator
             fetch = [self.global_step, self.model.total_loss, self.summary_op, self.model.d_loss, self.model.g_loss,
                      self.model.S_loss, self.model.all_preds, self.model.all_targets, self.g_optimizer, self.check_op]
-        elif step%(self.config.update_rate+1) ==  0:
+        else:
         # Train the discriminator
             fetch = [self.global_step, self.model.total_loss, self.summary_op, self.model.d_loss, self.model.g_loss,
                      self.model.S_loss, self.model.all_preds, self.model.all_targets, self.d_optimizer, self.check_op]
@@ -215,8 +215,8 @@ class Trainer(object):
         if step_time == 0: step_time = 0.001
         log_fn = (is_train and log.info or log.infov)
         log_fn((" [{split_mode:5s} step {step:4d}] " +
-                "total loss: {train_loss:.5f} " +
-                "S loss: {s_loss:.5f} " +
+                # "total loss: {train_loss:.5f} " +
+                "Supervised loss: {s_loss:.5f} " +
                 "D loss: {d_loss:.5f} " +
                 "G loss: {g_loss:.5f} " +
                 # "test loss: {test_loss:.5f} " +
@@ -236,12 +236,12 @@ class Trainer(object):
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=8)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--model', type=str, default='MLP')
     parser.add_argument('--prefix', type=str, default='default')
     parser.add_argument('--checkpoint', type=str, default=None)
     parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist'])
-    parser.add_argument('--learning_rate', type=float, default=1e-3)
+    parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=1)
     """
     parser.add_argument('--input_height', type=int, default=28)

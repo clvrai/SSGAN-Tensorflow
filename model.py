@@ -61,14 +61,14 @@ class Model(object):
                 with slim.arg_scope([slim.fully_connected],
                                     activation_fn=lrelu, weights_initializer=layers.xavier_initializer()):
                     x_1 = slim.fully_connected(z, 200, scope='x_1')
-                    x_1 = slim.dropout(x_1, keep_prob=0.5, is_training=is_train, scope='x_1/')
+                    # x_1 = slim.dropout(x_1, keep_prob=0.5, is_training=is_train, scope='x_1/')
                     print(scope.name, x_1)
                     x_2 = slim.fully_connected(x_1, 400, scope='x_2')
-                    x_2 = slim.dropout(x_2, keep_prob=0.5, is_training=is_train, scope='x_2/')
+                    # x_2 = slim.dropout(x_2, keep_prob=0.5, is_training=is_train, scope='x_2/')
                     print(scope.name, x_2)
                     x_3 = slim.fully_connected(x_2, 800, scope='x_3',
                                                activation_fn=lrelu)
-                    x_3 = slim.dropout(x_3, keep_prob=0.5, is_training=is_train, scope='x_3/')
+                    # x_3 = slim.dropout(x_3, keep_prob=0.5, is_training=is_train, scope='x_3/')
                     print(scope.name, x_3)
                     x_4 = slim.fully_connected(x_3, h*w, scope='x_4',
                                                activation_fn=tf.sigmoid )
@@ -85,13 +85,13 @@ class Model(object):
                 with slim.arg_scope([slim.fully_connected],
                                     activation_fn=lrelu, weights_initializer=layers.xavier_initializer()):
                     d_1 = slim.fully_connected(img, 400, scope='d_1')
-                    d_1 = tf.contrib.layers.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1/')
+                    # d_1 = tf.contrib.layers.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1/')
                     if not reuse: print (scope.name, d_1)
                     d_2 = slim.fully_connected(d_1, 100, scope='d_2')
-                    d_2 = tf.contrib.layers.dropout(d_2, keep_prob=0.5, is_training=is_train, scope='d_2/')
+                    # d_2 = tf.contrib.layers.dropout(d_2, keep_prob=0.5, is_training=is_train, scope='d_2/')
                     if not reuse: print (scope.name, d_2)
                     d_3 = slim.fully_connected(d_2, 25, scope='d_3')
-                    d_3 = tf.contrib.layers.dropout(d_3, keep_prob=0.5, is_training=is_train, scope='d_3/')
+                    # d_3 = tf.contrib.layers.dropout(d_3, keep_prob=0.5, is_training=is_train, scope='d_3/')
                     if not reuse: print (scope.name, d_3)
                     d_4 = slim.fully_connected(d_3, n+1, scope='d_4',
                                                activation_fn=None)
@@ -126,7 +126,7 @@ class Model(object):
         # XXX GAN loss
         d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_real_logits[:, -1], labels=tf.ones_like(d_real[:, -1])))
         d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
-        self.d_loss = d_loss_real + d_loss_fake
+        self.d_loss = d_loss_real + d_loss_fake + self.S_loss
         self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
         GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
 
