@@ -118,24 +118,27 @@ class Model(object):
         d_fake_logits.get_shape().assert_is_compatible_with([self.batch_size, n+1])
         # }}}
 
-        # build loss {{{
-        # XXX supervised loss
+        # build loss and accuracy{{{
+        # Supervised loss
         # cross-entropy
         self.S_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_real_logits[:, :-1], labels=self.label))
 
-        # XXX GAN loss
-        d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_real_logits[:, -1], labels=tf.ones_like(d_real[:, -1])))
-        d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
+        # GAN loss
+        d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                     logits=d_real_logits[:, -1], labels=tf.ones_like(d_real[:, -1])))
+        d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                     logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
         self.d_loss = d_loss_real + d_loss_fake + self.S_loss
-        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
+        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                     logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
         GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
 
-        # Total loss
-        self.total_loss = tf.reduce_mean( self.S_loss + GAN_loss )
-
+        # Classification accuracy
+        correct_prediction = tf.equal(tf.argmax(d_real_logits[:, :-1], 1), tf.argmax(self.label,1))
+        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         # }}}
 
-        tf.summary.scalar("loss/total_loss", self.total_loss)
+        tf.summary.scalar("loss/accuracy", self.accuracy)
         tf.summary.scalar("loss/GAN_loss", GAN_loss)
         tf.summary.scalar("loss/S_loss", self.S_loss)
         tf.summary.scalar("loss/d_loss", tf.reduce_mean(self.d_loss))

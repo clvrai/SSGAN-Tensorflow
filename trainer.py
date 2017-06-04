@@ -151,18 +151,18 @@ class Trainer(object):
         test_sample_step = 500
 
         for s in xrange(max_steps):
-            step, loss_train, summary, d_loss, g_loss, s_loss, step_time, prediction_train, gt_train = \
+            step, accuracy, summary, d_loss, g_loss, s_loss, step_time, prediction_train, gt_train = \
                 self.run_single_step(self.batch_train, step=s, is_train=True)
 
             # periodic inference
             if s % test_sample_step == 0:
-                loss_test, prediction_test, gt_test = \
+                accuracy_test, prediction_test, gt_test = \
                     self.run_test(self.batch_test, is_train=False)
             else:
-                loss_test = 0.0
+                accuracy_test = 0.0
 
             if s % 10 == 0:
-                self.log_step_message(step, loss_train, loss_test, d_loss, g_loss, s_loss, step_time)
+                self.log_step_message(step, accuracy, accuracy_test, d_loss, g_loss, s_loss, step_time)
 
 
             self.summary_writer.add_summary(summary, global_step=step)
@@ -176,8 +176,8 @@ class Trainer(object):
 
         batch_chunk = self.session.run(batch)
 
-        fetch = [self.global_step, self.model.total_loss, self.summary_op, self.model.d_loss, self.model.g_loss,
-                 self.model.S_loss, self.model.all_preds, self.model.all_targets, self.check_op]
+        fetch = [self.global_step, self.model.accuracy, self.summary_op, self.model.d_loss, 
+                 self.model.g_loss, self.model.S_loss, self.model.all_preds, self.model.all_targets, self.check_op]
 
         if step%(self.config.update_rate+1) > 0:
         # Train the generator
@@ -199,27 +199,20 @@ class Trainer(object):
 
         batch_chunk = self.session.run(batch)
 
-        # run multiple times due to randomness of z
-        gt = None
-        pred_list = []
-        for rep in range(repeat_times):
-            [step, loss, all_preds, all_targets] = self.session.run(
-                [self.global_step, self.model.total_loss, self.model.all_preds, self.model.all_targets],
-                feed_dict=self.model.get_feed_dict(batch_chunk, is_training=False)
-            )
-            gt = all_targets[0]  # just first item in the batch
-            pred_list.append(all_preds[0])  # just first item in the batch
+        [step, loss, all_preds, all_targets] = self.session.run(
+            [self.global_step, self.model.accuracy, self.model.all_preds, self.model.all_targets],
+            feed_dict=self.model.get_feed_dict(batch_chunk, is_training=False))
 
         return loss, all_preds, all_targets
 
-    def log_step_message(self, step, loss_train, loss_test, d_loss, g_loss, s_loss, step_time, is_train=True):
+    def log_step_message(self, step, accuracy, accuracy_test, d_loss, g_loss, s_loss, step_time, is_train=True):
         if step_time == 0: step_time = 0.001
         log_fn = (is_train and log.info or log.infov)
         log_fn((" [{split_mode:5s} step {step:4d}] " +
-                # "total loss: {train_loss:.5f} " +
                 "Supervised loss: {s_loss:.5f} " +
                 "D loss: {d_loss:.5f} " +
                 "G loss: {g_loss:.5f} " +
+                "Classification accuracy: {accuracy:.5f} " +
                 # "test loss: {test_loss:.5f} " +
                 "({sec_per_batch:.3f} sec/batch, {instance_per_sec:.3f} instances/sec) "
                 ).format(split_mode=(is_train and 'train' or 'val'),
@@ -227,8 +220,8 @@ class Trainer(object):
                          d_loss = d_loss,
                          g_loss = g_loss,
                          s_loss = s_loss,
-                         train_loss = loss_train,
-                         test_loss = loss_test,
+                         accuracy = accuracy,
+                         test_loss = accuracy_test,
                          sec_per_batch = step_time,
                          instance_per_sec = self.batch_size / step_time,
                          )
