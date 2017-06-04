@@ -14,7 +14,7 @@ During the training phase, we jointly minimze the total loss obtained by simply 
 
 Note that this implementation only follow the main idea of the original paper while differing a lot in implementation details such as model architectures, hyperparameters, applied optimizer, etc. Also, some useful training tricks applied to this implementation are stated at the end of this README.
 
-<img src="figure/example.png" alt="Drawing" style="height: 200px;"/>
+![](figure/example.png | width=200)
 
 ## Prerequisites
 
