@@ -212,8 +212,8 @@ class Trainer(object):
                 "Supervised loss: {s_loss:.5f} " +
                 "D loss: {d_loss:.5f} " +
                 "G loss: {g_loss:.5f} " +
-                "Classification accuracy: {accuracy:.5f} " +
-                # "test loss: {test_loss:.5f} " +
+                "Classification accuracy: {accuracy:.5f} "
+                "test loss: {test_loss:.5f} " +
                 "({sec_per_batch:.3f} sec/batch, {instance_per_sec:.3f} instances/sec) "
                 ).format(split_mode=(is_train and 'train' or 'val'),
                          step = step,
@@ -223,7 +223,7 @@ class Trainer(object):
                          accuracy = accuracy,
                          test_loss = accuracy_test,
                          sec_per_batch = step_time,
-                         instance_per_sec = self.batch_size / step_time,
+                         instance_per_sec = self.batch_size / step_time
                          )
                )
 

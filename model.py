@@ -118,7 +118,7 @@ class Model(object):
         d_fake_logits.get_shape().assert_is_compatible_with([self.batch_size, n+1])
         # }}}
 
-        # build loss and accuracy{{{
+        # build loss and self.accuracy{{{
         # Supervised loss
         # cross-entropy
         self.S_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_real_logits[:, :-1], labels=self.label))
@@ -145,11 +145,8 @@ class Model(object):
         tf.summary.scalar("loss/d_loss_real", tf.reduce_mean(d_loss_real))
         tf.summary.scalar("loss/d_loss_fake", tf.reduce_mean(d_loss_fake))
         tf.summary.scalar("loss/g_loss", tf.reduce_mean(self.g_loss))
-        for i in range(min(4, self.batch_size)):
-            tf.summary.image("generated_img/"+str(i), 
-                tf.expand_dims(tf.expand_dims(
-                    tf.reshape(fake_image[i, :], shape=[h, w]), dim=0), dim=-1))
-        tf.summary.image("real_img/0", 
-            tf.expand_dims(tf.expand_dims(
-                tf.reshape(self.image[0, :], shape=[h, w]), dim=0), dim=-1))
+        tf.summary.image("generated_img", 
+            tf.expand_dims(tf.reshape(fake_image, shape=[self.batch_size, h, w]), dim=-1))
+        tf.summary.image("real_img/", 
+            tf.expand_dims(tf.reshape(self.image, shape=[self.batch_size, h, w]), dim=-1), max_outputs=1)
         print ('\033[93mSuccessfully loaded the model.\033[0m')
