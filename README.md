@@ -39,8 +39,8 @@ To train a model with downloaded dataset:
 
 To test with an existing model:
 
-    $ python eval.py --dataset mnist --checkpoint ckpt_dir
-    $ python eval.py --dataset cifar --checkpoint ckpt_dir
+    $ python evaler.py --dataset mnist --checkpoint ckpt_dir
+    $ python evaler.py --dataset cifar --checkpoint ckpt_dir
 
 To train and test your own datasets:
 
