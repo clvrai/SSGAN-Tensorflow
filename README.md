@@ -42,10 +42,11 @@ To test with an existing model:
     $ python eval.py --dataset mnist --checkpoint ckpt_dir
     $ python eval.py --dataset cifar --checkpoint ckpt_dir
 
-Or, you can use your own dataset by:
+To train and test your own datasets:
 
-    $ mkdir data/YOUR_DATASET
-    ... add images to data/YOUR_DATASET ...
+    $ mkdir datasets/YOUR_DATASET
+    ... format your data to datasets/YOUR_DATASET ...
+    ... add a data loading file datasets/YOUR_DATASET.py ...
     $ python trainer.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
     $ python evaler.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
 
@@ -54,8 +55,6 @@ Or, you can use your own dataset by:
 ### MNIST
 
 ### CIFAR10
-
-More results can be found [here](#) and [here](#).
 
 ## Training details
 
@@ -76,4 +75,3 @@ Details of the histogram of real and fake results of Discriminator.
 ## Author
 
 Shao-Hua Sun / [@shaohua0116](http://shaohua0116.github.io/)
-
