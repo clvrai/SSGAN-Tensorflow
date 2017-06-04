@@ -176,14 +176,15 @@ class Trainer(object):
 
         batch_chunk = self.session.run(batch)
 
-        if step%(self.config.update_rate+1) > 10:
+        fetch = [self.global_step, self.model.total_loss, self.summary_op, self.model.d_loss, self.model.g_loss,
+                 self.model.S_loss, self.model.all_preds, self.model.all_targets, self.check_op]
+
+        if step%(self.config.update_rate+1) > 0:
         # Train the generator
-            fetch = [self.global_step, self.model.total_loss, self.summary_op, self.model.d_loss, self.model.g_loss,
-                     self.model.S_loss, self.model.all_preds, self.model.all_targets, self.g_optimizer, self.check_op]
+            fetch.append(self.g_optimizer)
         else:
         # Train the discriminator
-            fetch = [self.global_step, self.model.total_loss, self.summary_op, self.model.d_loss, self.model.g_loss,
-                     self.model.S_loss, self.model.all_preds, self.model.all_targets, self.d_optimizer, self.check_op]
+            fetch.append(self.d_optimizer)
 
         fetch_values = self.session.run(fetch,
             feed_dict=self.model.get_feed_dict(batch_chunk, step=step)

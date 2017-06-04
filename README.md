@@ -65,7 +65,7 @@ Details of the histogram of real and fake results of Discriminator.
 
 ## Training tricks
 
-* To avoid the fast convergence of D (discriminator) network, G (generator) network is updated twice for each D network update.
+* To avoid the fast convergence of D (discriminator) network, G (generator) network is updated more frequently.
 * One-side label smoothing is applied
 
 ## Related works
