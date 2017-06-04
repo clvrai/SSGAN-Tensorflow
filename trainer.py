@@ -36,7 +36,7 @@ class Trainer(object):
                  dataset,
                  dataset_test):
         self.config = config
-        hyper_parameter_str = config.dataset+'_lr_'+str(config.learning_rate)
+        hyper_parameter_str = config.dataset+'_lr_'+str(config.learning_rate)+'_update_G'+str(config.update_rate)+'_D'+str(1)
         self.train_dir = './train_dir/%s-%s-%s-%s' % (
             config.model,
             config.prefix,
@@ -219,7 +219,7 @@ class Trainer(object):
                 "S loss: {s_loss:.5f} " +
                 "D loss: {d_loss:.5f} " +
                 "G loss: {g_loss:.5f} " +
-                "test loss: {test_loss:.5f} " +
+                # "test loss: {test_loss:.5f} " +
                 "({sec_per_batch:.3f} sec/batch, {instance_per_sec:.3f} instances/sec) "
                 ).format(split_mode=(is_train and 'train' or 'val'),
                          step = step,
@@ -251,7 +251,7 @@ def main():
     config = parser.parse_args()
 
     if config.dataset == 'mnist':
-        from mnist_dataset import create_default_splits
+        from datasets.mnist import create_default_splits
         config.input_height = 28
         config.input_width = 28
         config.num_class = 10

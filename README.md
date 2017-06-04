@@ -27,7 +27,7 @@ Note that this implementation only follow the main idea of the original paper wh
 
 Download datasets with:
 
-    $ python download.py mnist cifar
+    $ python download.py --dataset mnist cifar
 
 To train a model with downloaded dataset:
 
@@ -47,18 +47,8 @@ Or, you can use your own dataset by:
     $ python evaler.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
 
 ## Results
-<!--
-![result](assets/training.gif)
--->
+
 ### MNIST
-<!--
-
-![mnist_result1](assets/mnist1.png)
-
-![mnist_result2](assets/mnist2.png)
-
-![mnist_result3](assets/mnist3.png)
--->
 
 ### CIFAR10
 
@@ -66,22 +56,13 @@ More results can be found [here](#) and [here](#).
 
 ## Training details
 
-Details of the loss of Discriminator and Generator (MNIST dataset).
-<!--
-![d_loss](assets/d_loss.png)
+Details of the loss of Discriminator and Generator.
 
-![g_loss](assets/g_loss.png)
--->
-Details of the histogram of true and fake result of Discriminator (MNIST dataset).
-<!--
-![d_hist](assets/d_hist.png)
-
-![d__hist](assets/d__hist.png)
--->
+Details of the histogram of true and fake result of Discriminator.
 
 ## Training tricks
 
-* To avoid the fast convergence of D (discriminator) network, G (generator) network is updated twice for each D network update, which differs from original paper.
+* To avoid the fast convergence of D (discriminator) network, G (generator) network is updated twice for each D network update.
 * One-side label smoothing is applied
 
 ## Related work
