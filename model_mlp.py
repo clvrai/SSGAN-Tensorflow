@@ -9,7 +9,6 @@ import tensorflow.contrib.layers as layers
 import tensorflow.contrib.slim as slim
 
 from model_ops import lrelu, huber_loss
-
 from util import log
 
 class Model(object):
@@ -54,30 +53,30 @@ class Model(object):
         w = self.input_width
         n_z = 100
 
-        # XXX G takes ramdon noise and tries to generate images [B, h, w]
+        # G takes ramdon noise and tries to generate images [B, h, w]
         def G(z, scope='Generator'):
             with tf.variable_scope(scope) as scope:
                 print ('\033[93m'+scope.name+'\033[0m')
                 with slim.arg_scope([slim.fully_connected],
                                     activation_fn=lrelu, weights_initializer=layers.xavier_initializer()):
-                    x_1 = slim.fully_connected(z, 200, scope='x_1')
-                    # x_1 = slim.dropout(x_1, keep_prob=0.5, is_training=is_train, scope='x_1/')
-                    print(scope.name, x_1)
-                    x_2 = slim.fully_connected(x_1, 400, scope='x_2')
-                    # x_2 = slim.dropout(x_2, keep_prob=0.5, is_training=is_train, scope='x_2/')
-                    print(scope.name, x_2)
-                    x_3 = slim.fully_connected(x_2, 800, scope='x_3',
+                    g_1 = slim.fully_connected(z, 200, scope='g_1')
+                    # g_1 = slim.dropout(g_1, keep_prob=0.5, is_training=is_train, scope='g_1/')
+                    print(scope.name, g_1)
+                    g_2 = slim.fully_connected(g_1, 400, scope='g_2')
+                    # g_2 = slim.dropout(g_2, keep_prob=0.5, is_training=is_train, scope='g_2/')
+                    print(scope.name, g_2)
+                    g_3 = slim.fully_connected(g_2, 800, scope='g_3',
                                                activation_fn=lrelu)
-                    # x_3 = slim.dropout(x_3, keep_prob=0.5, is_training=is_train, scope='x_3/')
-                    print(scope.name, x_3)
-                    x_4 = slim.fully_connected(x_3, h*w, scope='x_4',
+                    # g_3 = slim.dropout(g_3, keep_prob=0.5, is_training=is_train, scope='g_3/')
+                    print(scope.name, g_3)
+                    g_4 = slim.fully_connected(g_3, h*w, scope='g_4',
                                                activation_fn=tf.sigmoid )
-                    print (scope.name, x_4)
-                    output = tf.reshape(x_4, shape=[self.batch_size, h, w])
+                    print (scope.name, g_4)
+                    output = tf.reshape(g_4, shape=[self.batch_size, h, w])
                     assert output.get_shape().as_list() == [self.batch_size, h, w]
             return output
 
-        # XXX D takes images as input and tries to output class label [B, n+1]
+        # D takes images as input and tries to output class label [B, n+1]
         def D(img, scope='Discriminator', reuse=True):
             with tf.variable_scope(scope, reuse=reuse) as scope:
                 if not reuse: print ('\033[93m'+scope.name+'\033[0m')
@@ -124,8 +123,9 @@ class Model(object):
         self.S_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_real_logits[:, :-1], labels=self.label))
 
         # GAN loss
+        alpha = 0.9
         d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_real_logits[:, -1], labels=tf.ones_like(d_real[:, -1])))
+                                     logits=d_real_logits[:, -1], labels=alpha*tf.ones_like(d_real[:, -1])))
         d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
                                      logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
         self.d_loss = d_loss_real + d_loss_fake + self.S_loss

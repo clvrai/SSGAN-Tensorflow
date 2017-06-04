@@ -25,8 +25,10 @@ class Trainer(object):
 
     @staticmethod
     def get_model_class(model_name):
-        if model_name == 'MLP':
-            from model import Model
+        if model_name == 'mlp':
+            from model_mlp import Model
+        elif model_name == 'cnn':
+            from model_cnn import Model
         else:
             raise ValueError(model_name)
         return Model
@@ -231,7 +233,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--model', type=str, default='MLP')
+    parser.add_argument('--model', type=str, default='cnn', choices=['mlp', 'cnn'])
     parser.add_argument('--prefix', type=str, default='default')
     parser.add_argument('--checkpoint', type=str, default=None)
     parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist'])
