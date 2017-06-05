@@ -1,7 +1,6 @@
 train_dir/
 *.py[cod]
 *.sw[op]
-*.png
 *.hy
 *.txt
 *.gz
