@@ -71,39 +71,38 @@ class Model(object):
                 g_5 = deconv2d(g_4, 1, 6, 2, name='g_5_deconv')    # 12->28
                 print (scope.name, g_5)
                 """
-                g_1 = deconv2d(z, 200, 2, 1, name='g_1_deconv')     # 1->2 
+                g_1 = deconv2d(z, 100, 2, 1, name='g_1_deconv')     # 1->2 
                 print (scope.name, g_1)
-                g_2 = deconv2d(g_1, 100, 3, 2, name='g_2_deconv')   # 2->6
+                g_2 = deconv2d(g_1, 25, 3, 2, name='g_2_deconv')   # 2->6
                 print (scope.name, g_2)
-                g_3 = deconv2d(g_2, 50, 4, 2, name='g_3_deconv')   # 6->13
+                g_3 = deconv2d(g_2, 6, 4, 2, name='g_3_deconv')   # 6->13
                 print (scope.name, g_3)
-                g_4 = deconv2d(g_3, 20, 6, 2, name='g_4_deconv', activation_fn='tanh')    # 13->28
+                g_4 = deconv2d(g_3, 1, 6, 2, name='g_4_deconv', activation_fn='tanh')    # 13->28
                 print (scope.name, g_4)
-                output = g_4[:, :, :, 0]
-                assert output.get_shape().as_list() == [self.batch_size, h, w], output.get_shape().as_list()
+                output = g_4
+                assert output.get_shape().as_list()[:3] == [self.batch_size, h, w], output.get_shape().as_list()
             return output
 
         # D takes images as input and tries to output class label [B, n+1]
         def D(img, scope='Discriminator', reuse=True):
             with tf.variable_scope(scope, reuse=reuse) as scope:
                 if not reuse: print ('\033[93m'+scope.name+'\033[0m')
-                image = tf.expand_dims(img, -1)
-                d_1 = conv2d(image, 32, is_train, name='d_1_conv')
+                d_1 = conv2d(img, 32, is_train, name='d_1_conv')
                 # d_1 = tf.contrib.layers.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1/')
                 if not reuse: print (scope.name, d_1)
                 d_2 = conv2d(d_1, 32*2, is_train, name='d_2_conv')
                 if not reuse: print (scope.name, d_2)
                 d_3 = conv2d(d_2, 32*4, is_train, name='d_3_conv')
                 if not reuse: print (scope.name, d_3)
-                d_4 = conv2d(d_3, 32*8, is_train, name='d_4_conv')
+                d_4 = slim.fully_connected(
+                    tf.reshape(d_3, [self.batch_size, -1]), n+1, scope='d_4_fc', activation_fn=None)
                 if not reuse: print (scope.name, d_4)
-                d_5 = slim.fully_connected(
-                    tf.reshape(d_4, [self.batch_size, -1]), n+1, scope='d_5_fc', activation_fn=None)
-                if not reuse: print (scope.name, d_5)
-                output = d_5
+                output = d_4
                 assert output.get_shape().as_list() == [self.batch_size, n+1]
                 return tf.nn.sigmoid(output), output
 
+        if len(self.image.get_shape().as_list()) == 3:
+            image = tf.expand_dims(self.image, -1)
         # Generator {{{
         # =========
         z = tf.random_uniform([self.batch_size, n_z], minval=-1, maxval=1, dtype=tf.float32)
@@ -112,7 +111,7 @@ class Model(object):
 
         # Discriminator {{{
         # =========
-        d_real, d_real_logits = D(self.image, scope='Discriminator', reuse=False)
+        d_real, d_real_logits = D(image, scope='Discriminator', reuse=False)
         d_fake, d_fake_logits = D(fake_image, scope='Discriminator', reuse=True)
         self.all_preds = d_real
         self.all_targets = self.label
@@ -152,8 +151,8 @@ class Model(object):
         tf.summary.scalar("loss/d_loss_real", tf.reduce_mean(d_loss_real))
         tf.summary.scalar("loss/d_loss_fake", tf.reduce_mean(d_loss_fake))
         tf.summary.scalar("loss/g_loss", tf.reduce_mean(self.g_loss))
-        tf.summary.image("img/fake", tf.expand_dims(fake_image, dim=-1))
-        tf.summary.image("img/real", tf.expand_dims(self.image, dim=-1), max_outputs=1)
+        tf.summary.image("img/fake", fake_image)
+        tf.summary.image("img/real", image, max_outputs=1)
         tf.summary.image("label/target_real", tf.reshape(self.label, [1, self.batch_size, n, 1]))
         tf.summary.image("label/pred_real", tf.reshape(d_real, [1, self.batch_size, n+1, 1]))
         tf.summary.image("label/pred_fake", tf.reshape(d_fake, [1, self.batch_size, n+1, 1]))
