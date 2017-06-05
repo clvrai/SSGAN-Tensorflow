@@ -60,17 +60,14 @@ class Model(object):
                 with slim.arg_scope([slim.fully_connected],
                                     activation_fn=lrelu, weights_initializer=layers.xavier_initializer()):
                     g_1 = slim.fully_connected(z, 200, scope='g_1')
-                    # g_1 = slim.dropout(g_1, keep_prob=0.5, is_training=is_train, scope='g_1/')
                     print(scope.name, g_1)
                     g_2 = slim.fully_connected(g_1, 400, scope='g_2')
-                    # g_2 = slim.dropout(g_2, keep_prob=0.5, is_training=is_train, scope='g_2/')
                     print(scope.name, g_2)
                     g_3 = slim.fully_connected(g_2, 800, scope='g_3',
                                                activation_fn=lrelu)
-                    # g_3 = slim.dropout(g_3, keep_prob=0.5, is_training=is_train, scope='g_3/')
                     print(scope.name, g_3)
                     g_4 = slim.fully_connected(g_3, h*w, scope='g_4',
-                                               activation_fn=tf.sigmoid )
+                                               activation_fn=tf.nn.tanh)
                     print (scope.name, g_4)
                     output = tf.reshape(g_4, shape=[self.batch_size, h, w])
                     assert output.get_shape().as_list() == [self.batch_size, h, w]
@@ -84,13 +81,10 @@ class Model(object):
                 with slim.arg_scope([slim.fully_connected],
                                     activation_fn=lrelu, weights_initializer=layers.xavier_initializer()):
                     d_1 = slim.fully_connected(img, 400, scope='d_1')
-                    # d_1 = tf.contrib.layers.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1/')
                     if not reuse: print (scope.name, d_1)
                     d_2 = slim.fully_connected(d_1, 100, scope='d_2')
-                    # d_2 = tf.contrib.layers.dropout(d_2, keep_prob=0.5, is_training=is_train, scope='d_2/')
                     if not reuse: print (scope.name, d_2)
                     d_3 = slim.fully_connected(d_2, 25, scope='d_3')
-                    # d_3 = tf.contrib.layers.dropout(d_3, keep_prob=0.5, is_training=is_train, scope='d_3/')
                     if not reuse: print (scope.name, d_3)
                     d_4 = slim.fully_connected(d_3, n+1, scope='d_4',
                                                activation_fn=None)

@@ -66,14 +66,15 @@ class Trainer(object):
         # --- optimizer ---
         self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)
         self.learning_rate = config.learning_rate
-        self.learning_rate = tf.train.exponential_decay(
-            self.learning_rate,
-            global_step=self.global_step,
-            decay_steps=10000,
-            decay_rate=0.5,
-            staircase=True,
-            name='decaying_learning_rate'
-        )
+        if config.lr_weght_decay:
+            self.learning_rate = tf.train.exponential_decay(
+                self.learning_rate,
+                global_step=self.global_step,
+                decay_steps=10000,
+                decay_rate=0.9,
+                staircase=True,
+                name='decaying_learning_rate'
+            )
         # print all the trainable variables
         #tf.contrib.slim.model_analyzer.analyze_vars(tf.trainable_variables(), print_info=True)
 
@@ -95,7 +96,7 @@ class Trainer(object):
         self.d_optimizer = tf.contrib.layers.optimize_loss(
             loss=self.model.d_loss,
             global_step=self.global_step,
-            learning_rate=self.learning_rate*0.25,
+            learning_rate=self.learning_rate*0.5,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
             clip_gradients=20.0,
             name='d_optimize_loss',
@@ -122,7 +123,6 @@ class Trainer(object):
         self.supervisor =  tf.train.Supervisor(
             logdir=self.train_dir,
             is_chief=True,
-            # saver=self.saver,
             saver=None,
             summary_op=None,
             summary_writer=self.summary_writer,
@@ -242,6 +242,8 @@ def main():
     parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist'])
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=1)
+    parser.add_argument('--lr_weght_decay', action='store_true', default=False)
+
     """
     parser.add_argument('--input_height', type=int, default=28)
     parser.add_argument('--input_width', type=int, default=28)

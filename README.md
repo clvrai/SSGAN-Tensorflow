@@ -54,7 +54,7 @@ To train and test your own datasets:
 
 ### MNIST
 
-Generated samples:
+* Generated samples
 
 <img src="figure/result/mnist/samples.png" height="200"/>
 
@@ -63,9 +63,31 @@ Generated samples:
 
 ## Training details
 
-Details of the loss of Discriminator and Generator.
+* The supervised loss
 
-Details of the histogram of real and fake results of Discriminator.
+<img src="figure/result/mnist/samples.png" height="200"/>
+
+* The loss of Discriminator
+
+D_loss_real
+
+<img src="figure/result/mnist/samples.png" height="200"/>
+
+D_loss_fake
+
+<img src="figure/result/mnist/samples.png" height="200"/>
+
+D_loss (total loss)
+
+<img src="figure/result/mnist/samples.png" height="200"/>
+
+* The loss of Generator
+
+G_loss
+
+<img src="figure/result/mnist/samples.png" height="200"/>
+
+* Classification accuracy
 
 ## Training tricks
 

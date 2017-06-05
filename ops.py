@@ -35,4 +35,3 @@ def deconv2d(input, output_shape, k, s, name="deconv2d", activation_fn='lrelu'):
         elif activation_fn == 'tanh':
             deconv = tf.nn.tanh(deconv)
         return deconv
- 
