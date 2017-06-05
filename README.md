@@ -96,6 +96,7 @@ G_loss
 * One-sided label smoothing is applied to the positive labels.
 * Gradient clipping trick is applied to stablize training.
 * Use larger momentum of [Adam](https://arxiv.org/abs/1412.6980) optimizer.
+* Please refer to the codes for more details.
 
 ## Related articles
 * [Unsupervised and Semi-supervised Learning with Categorical Generative Adversarial Networks](https://arxiv.org/abs/1511.06390) by Springenberg
