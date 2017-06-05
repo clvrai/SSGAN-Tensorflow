@@ -94,6 +94,8 @@ G_loss
 
 * To avoid the fast convergence of D (discriminator) network, G (generator) network is updated more frequently.
 * One-sided label smoothing is applied to the positive labels.
+* Gradient clipping trick is applied to stablize training.
+* Use larger momentum of [Adam](https://arxiv.org/abs/1412.6980) optimizer.
 
 ## Related articles
 * [Unsupervised and Semi-supervised Learning with Categorical Generative Adversarial Networks](https://arxiv.org/abs/1511.06390) by Springenberg
