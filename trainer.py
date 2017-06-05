@@ -65,6 +65,7 @@ class Trainer(object):
         # --- optimizer ---
         self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)
         self.learning_rate = config.learning_rate
+        """
         self.learning_rate = tf.train.exponential_decay(
             self.learning_rate,
             global_step=self.global_step,
@@ -73,6 +74,7 @@ class Trainer(object):
             staircase=True,
             name='decaying_learning_rate'
         )
+        """
         # print all the trainable variables
         #tf.contrib.slim.model_analyzer.analyze_vars(tf.trainable_variables(), print_info=True)
 
@@ -95,7 +97,7 @@ class Trainer(object):
             loss=self.model.d_loss,
             global_step=self.global_step,
             learning_rate=self.learning_rate,
-            optimizer=tf.train.AdamOptimizer,
+            optimizer=tf.train.AdamOptimizer(beta1=0.5),
             clip_gradients=20.0,
             name='d_optimize_loss',
             variables=d_var
@@ -105,7 +107,7 @@ class Trainer(object):
             loss=self.model.g_loss,
             global_step=self.global_step,
             learning_rate=self.learning_rate,
-            optimizer=tf.train.AdamOptimizer,
+            optimizer=tf.train.AdamOptimizer(beta1=0.5),
             clip_gradients=20.0,
             name='g_optimize_loss',
             variables=g_var
@@ -166,10 +168,9 @@ class Trainer(object):
             if s % 10 == 0:
                 self.log_step_message(step, accuracy, accuracy_test, d_loss, g_loss, s_loss, step_time)
 
-
             self.summary_writer.add_summary(summary, global_step=step)
 
-            if s % output_save_step == 0:
+            if s % output_save_step == 0 and s > 0:
                 log.infov("Saved checkpoint at %d", s)
                 save_path = self.saver.save(self.session, os.path.join(self.train_dir, 'model'), global_step=step)
 

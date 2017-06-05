@@ -58,17 +58,28 @@ class Model(object):
             with tf.variable_scope(scope) as scope:
                 print ('\033[93m'+scope.name+'\033[0m')
                 z = tf.reshape(z, [self.batch_size, 1, 1, -1])
-                g_1 = deconv2d(z, 400, 2, 1, name='g_1_deconv')     # 1->2 
+                
+                """
+                g_1 = deconv2d(z, 200, 2, 1, name='g_1_deconv')     # 1->2 
                 print (scope.name, g_1)
-                g_2 = deconv2d(g_1, 200, 2, 1, name='g_2_deconv')   # 2->3
+                g_2 = deconv2d(g_1, 100, 2, 1, name='g_2_deconv')   # 2->3
                 print (scope.name, g_2)
-                g_3 = deconv2d(g_2, 100, 3, 1, name='g_3_deconv')   # 3->5
+                g_3 = deconv2d(g_2, 50, 3, 1, name='g_3_deconv')   # 3->5
                 print (scope.name, g_3)
-                g_4 = deconv2d(g_3, 50, 4, 2, name='g_4_deconv')    # 5->12
+                g_4 = deconv2d(g_3, 25, 4, 2, name='g_4_deconv')    # 5->12
                 print (scope.name, g_4)
                 g_5 = deconv2d(g_4, 1, 6, 2, name='g_5_deconv')    # 12->28
                 print (scope.name, g_5)
-                output = g_5[:, :, :, 0]
+                """
+                g_1 = deconv2d(z, 200, 2, 1, name='g_1_deconv')     # 1->2 
+                print (scope.name, g_1)
+                g_2 = deconv2d(g_1, 100, 3, 2, name='g_2_deconv')   # 2->6
+                print (scope.name, g_2)
+                g_3 = deconv2d(g_2, 50, 4, 2, name='g_3_deconv')   # 6->13
+                print (scope.name, g_3)
+                g_4 = deconv2d(g_3, 20, 6, 2, name='g_4_deconv', activation_fn='tanh')    # 13->28
+                print (scope.name, g_4)
+                output = g_4[:, :, :, 0]
                 assert output.get_shape().as_list() == [self.batch_size, h, w], output.get_shape().as_list()
             return output
 
@@ -95,20 +106,16 @@ class Model(object):
 
         # Generator {{{
         # =========
-        z = tf.random_normal(shape=[self.batch_size, n_z])
-        self.z = z
+        z = tf.random_uniform([self.batch_size, n_z], minval=-1, maxval=1, dtype=tf.float32)
         fake_image = G(z)
-        assert self.image.get_shape().as_list() == fake_image.get_shape().as_list(), fake_image.get_shape().as_list()
         # }}}
 
         # Discriminator {{{
         # =========
         d_real, d_real_logits = D(self.image, scope='Discriminator', reuse=False)
+        d_fake, d_fake_logits = D(fake_image, scope='Discriminator', reuse=True)
         self.all_preds = d_real
         self.all_targets = self.label
-        d_fake, d_fake_logits = D(fake_image, scope='Discriminator', reuse=True)
-        d_real_logits.get_shape().assert_is_compatible_with([self.batch_size, n+1])
-        d_fake_logits.get_shape().assert_is_compatible_with([self.batch_size, n+1])
         # }}}
 
         # build loss and self.accuracy{{{
@@ -120,12 +127,17 @@ class Model(object):
         # GAN loss
         alpha = 0.9
         d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
+                                     # logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
+                                     logits=d_real_logits[:, -1], labels=alpha*tf.ones_like(d_real[:, -1])))
         d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
-        self.d_loss = d_loss_real + d_loss_fake + self.S_loss
-        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                     # logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
                                      logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
+        # self.d_loss = d_loss_real + d_loss_fake + self.S_loss
+        # XXX only train GAN
+        self.d_loss = d_loss_real + d_loss_fake
+        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                     # logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
+                                     logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
         GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
 
         # Classification accuracy
@@ -140,8 +152,9 @@ class Model(object):
         tf.summary.scalar("loss/d_loss_real", tf.reduce_mean(d_loss_real))
         tf.summary.scalar("loss/d_loss_fake", tf.reduce_mean(d_loss_fake))
         tf.summary.scalar("loss/g_loss", tf.reduce_mean(self.g_loss))
-        tf.summary.image("generated_img", 
-            tf.expand_dims(tf.reshape(fake_image, shape=[self.batch_size, h, w]), dim=-1))
-        tf.summary.image("real_img/", 
-            tf.expand_dims(tf.reshape(self.image, shape=[self.batch_size, h, w]), dim=-1), max_outputs=1)
+        tf.summary.image("img/fake", tf.expand_dims(fake_image, dim=-1))
+        tf.summary.image("img/real", tf.expand_dims(self.image, dim=-1), max_outputs=1)
+        tf.summary.image("label/target_real", tf.reshape(self.label, [1, self.batch_size, n, 1]))
+        tf.summary.image("label/pred_real", tf.reshape(d_real, [1, self.batch_size, n+1, 1]))
+        tf.summary.image("label/pred_fake", tf.reshape(d_fake, [1, self.batch_size, n+1, 1]))
         print ('\033[93mSuccessfully loaded the model.\033[0m')
