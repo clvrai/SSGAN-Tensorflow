@@ -34,17 +34,17 @@ Download datasets with:
 
     $ python download.py --dataset mnist cifar
 
-To train a model with downloaded dataset:
+Train models with downloaded dataset:
 
     $ python trainer.py --dataset mnist
     $ python trainer.py --dataset cifar
 
-To test with an existing model:
+Test models with saved checkpoints:
 
     $ python evaler.py --dataset mnist --checkpoint ckpt_dir
     $ python evaler.py --dataset cifar --checkpoint ckpt_dir
 
-To train and test your own datasets:
+Train and test your own datasets:
 
     $ mkdir datasets/YOUR_DATASET
     ... format your data to datasets/YOUR_DATASET ...
@@ -59,9 +59,6 @@ To train and test your own datasets:
 * Generated samples
 
 <img src="figure/result/mnist/samples.png" height="200"/>
-
-
-### CIFAR10
 
 ## Training details
 
