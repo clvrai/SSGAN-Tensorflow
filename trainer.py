@@ -66,16 +66,14 @@ class Trainer(object):
         # --- optimizer ---
         self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)
         self.learning_rate = config.learning_rate
-        """
         self.learning_rate = tf.train.exponential_decay(
             self.learning_rate,
             global_step=self.global_step,
-            decay_steps=5000,
+            decay_steps=10000,
             decay_rate=0.5,
             staircase=True,
             name='decaying_learning_rate'
         )
-        """
         # print all the trainable variables
         #tf.contrib.slim.model_analyzer.analyze_vars(tf.trainable_variables(), print_info=True)
 
@@ -97,7 +95,7 @@ class Trainer(object):
         self.d_optimizer = tf.contrib.layers.optimize_loss(
             loss=self.model.d_loss,
             global_step=self.global_step,
-            learning_rate=self.learning_rate,
+            learning_rate=self.learning_rate*0.25,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
             clip_gradients=20.0,
             name='d_optimize_loss',
@@ -219,7 +217,7 @@ class Trainer(object):
                 "Supervised loss: {s_loss:.5f} " +
                 "D loss: {d_loss:.5f} " +
                 "G loss: {g_loss:.5f} " +
-                "Classification accuracy: {accuracy:.5f} "
+                "Accuracy: {accuracy:.5f} "
                 "test loss: {test_loss:.5f} " +
                 "({sec_per_batch:.3f} sec/batch, {instance_per_sec:.3f} instances/sec) "
                 ).format(split_mode=(is_train and 'train' or 'val'),
