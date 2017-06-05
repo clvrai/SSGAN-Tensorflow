@@ -54,6 +54,11 @@ To train and test your own datasets:
 
 ### MNIST
 
+Generated samples:
+
+<img src="figure/result/mnist/generated_sample.png" height="200"/>
+
+
 ### CIFAR10
 
 ## Training details

@@ -152,7 +152,7 @@ class Trainer(object):
         max_steps = 1000000
 
         output_save_step = 1000
-        test_sample_step = 500
+        test_sample_step = 100
 
         for s in xrange(max_steps):
             step, accuracy, summary, d_loss, g_loss, s_loss, step_time, prediction_train, gt_train = \
