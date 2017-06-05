@@ -20,6 +20,7 @@ import os
 import time
 import numpy as np
 import tensorflow as tf
+import h5py
 
 class Trainer(object):
 
@@ -155,7 +156,7 @@ class Trainer(object):
         test_sample_step = 100
 
         for s in xrange(max_steps):
-            step, accuracy, summary, d_loss, g_loss, s_loss, step_time, prediction_train, gt_train = \
+            step, accuracy, summary, d_loss, g_loss, s_loss, step_time, prediction_train, gt_train, g_img = \
                 self.run_single_step(self.batch_train, step=s, is_train=True)
 
             # periodic inference
@@ -173,14 +174,17 @@ class Trainer(object):
             if s % output_save_step == 0 and s > 0:
                 log.infov("Saved checkpoint at %d", s)
                 save_path = self.saver.save(self.session, os.path.join(self.train_dir, 'model'), global_step=step)
+                f = h5py.File(os.path.join(self.train_dir, 'g_img_'+str(s)+'.hy'), 'w')
+                f['image'] = g_img
+                f.close()
 
     def run_single_step(self, batch, step=None, is_train=True):
         _start_time = time.time()
 
         batch_chunk = self.session.run(batch)
 
-        fetch = [self.global_step, self.model.accuracy, self.summary_op, self.model.d_loss, 
-                 self.model.g_loss, self.model.S_loss, self.model.all_preds, self.model.all_targets, self.check_op]
+        fetch = [self.global_step, self.model.accuracy, self.summary_op, self.model.d_loss, self.model.g_loss, 
+                 self.model.S_loss, self.model.all_preds, self.model.all_targets, self.model.fake_img, self.check_op]
 
         if step%(self.config.update_rate+1) > 0:
         # Train the generator
@@ -192,11 +196,11 @@ class Trainer(object):
         fetch_values = self.session.run(fetch,
             feed_dict=self.model.get_feed_dict(batch_chunk, step=step)
         )
-        [step, loss, summary, d_loss, g_loss, s_loss, all_preds, all_targets] = fetch_values[:8]
+        [step, loss, summary, d_loss, g_loss, s_loss, all_preds, all_targets, g_img] = fetch_values[:9]
 
         _end_time = time.time()
 
-        return step, loss, summary, d_loss, g_loss, s_loss,  (_end_time - _start_time), all_preds, all_targets
+        return step, loss, summary, d_loss, g_loss, s_loss,  (_end_time - _start_time), all_preds, all_targets, g_img
 
     def run_test(self, batch, is_train=False, repeat_times=8):
 

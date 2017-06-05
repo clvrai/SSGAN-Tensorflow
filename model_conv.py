@@ -107,6 +107,7 @@ class Model(object):
         # =========
         z = tf.random_uniform([self.batch_size, n_z], minval=-1, maxval=1, dtype=tf.float32)
         fake_image = G(z)
+        self.fake_img = fake_image
         # }}}
 
         # Discriminator {{{
