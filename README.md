@@ -62,6 +62,8 @@ Train and test your own datasets:
 
 ## Training details
 
+### MNIST
+
 * The supervised loss
 
 <img src="figure/result/mnist/s_loss.png" height="200"/>
@@ -89,6 +91,33 @@ G_loss
 * Classification accuracy
 
 <img src="figure/result/mnist/accuracy.png" height="200"/>
+
+### CIFAR10
+
+* The supervised loss
+
+
+* The loss of Discriminator
+
+D_loss_real
+
+<img src="figure/result/cifar10/d_loss_real.png" height="200"/>
+
+D_loss_fake
+
+<img src="figure/result/cifar10/d_loss_fake.png" height="200"/>
+
+D_loss (total loss)
+
+<img src="figure/result/cifar10/d_loss.png" height="200"/>
+
+* The loss of Generator
+
+G_loss
+
+<img src="figure/result/cifar10/g_loss.png" height="200"/>
+
+* Classification accuracy
 
 ## Training tricks
 
