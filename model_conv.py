@@ -73,7 +73,7 @@ class Model(object):
                 g_4 = deconv2d(g_3, deconv_info[3], name='g_4_deconv', activation_fn='tanh')
                 print (scope.name, g_4)
                 output = g_4
-                assert output.get_shape().as_list()[:3] == [self.batch_size, h, w], output.get_shape().as_list()
+                assert output.get_shape().as_list() == self.image.get_shape().as_list(), output.get_shape().as_list()
             return output
 
         # D takes images as input and tries to output class label [B, n+1]
@@ -81,10 +81,13 @@ class Model(object):
             with tf.variable_scope(scope, reuse=reuse) as scope:
                 if not reuse: print ('\033[93m'+scope.name+'\033[0m')
                 d_1 = conv2d(img, conv_info[0], is_train, name='d_1_conv')
+                d_1 = slim.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1_conv/')
                 if not reuse: print (scope.name, d_1)
                 d_2 = conv2d(d_1, conv_info[1], is_train, name='d_2_conv')
+                d_2 = slim.dropout(d_2, keep_prob=0.5, is_training=is_train, scope='d_2_conv/')
                 if not reuse: print (scope.name, d_2)
                 d_3 = conv2d(d_2, conv_info[2], is_train, name='d_3_conv')
+                d_3 = slim.dropout(d_3, keep_prob=0.5, is_training=is_train, scope='d_3_conv/')
                 if not reuse: print (scope.name, d_3)
                 d_4 = slim.fully_connected(
                     tf.reshape(d_3, [self.batch_size, -1]), n+1, scope='d_4_fc', activation_fn=None)

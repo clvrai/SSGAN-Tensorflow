@@ -98,6 +98,7 @@ class Trainer(object):
             global_step=self.global_step,
             learning_rate=self.learning_rate*0.5,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
+            # optimizer=tf.train.RMSPropOptimizer,
             clip_gradients=20.0,
             name='d_optimize_loss',
             variables=d_var
@@ -108,6 +109,7 @@ class Trainer(object):
             global_step=self.global_step,
             learning_rate=self.learning_rate,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
+            # optimizer=tf.train.RMSPropOptimizer,
             clip_gradients=20.0,
             name='g_optimize_loss',
             variables=g_var
@@ -260,7 +262,7 @@ def main():
         from datasets.cifar10 import create_default_splits
         config.data_info = np.array([32, 32, 10, 3])
         config.conv_info = np.array([32, 96, 288])
-        config.deconv_info = np.array([[200, 2, 1], [100, 4, 2], [50, 4, 2], [3, 6, 2]])
+        config.deconv_info = np.array([[512, 2, 1], [256, 4, 2], [128, 4, 2], [3, 6, 2]])
     else:
         raise ValueError(config.dataset)
 
