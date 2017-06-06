@@ -8,7 +8,7 @@ import tensorflow.contrib.rnn as rnn
 import tensorflow.contrib.layers as layers
 import tensorflow.contrib.slim as slim
 
-from model_ops import lrelu, huber_loss
+from ops import lrelu
 from util import log
 
 class Model(object):
@@ -20,14 +20,17 @@ class Model(object):
 
         self.config = config
         self.batch_size = self.config.batch_size
-        self.input_height = self.config.input_height
-        self.input_width = self.config.input_width
-        self.num_class = self.config.num_class
+        self.input_height = self.config.data_info[0]
+        self.input_width = self.config.data_info[1]
+        self.num_class = self.config.data_info[2]
+        self.c_dim = self.config.data_info[3]
+        self.deconv_info = self.config.deconv_info
+        self.conv_info = self.config.conv_info
 
         # create placeholders for the input
         self.image = tf.placeholder(
             name='image', dtype=tf.float32,
-            shape=[self.batch_size, self.input_height, self.input_width],
+            shape=[self.batch_size, self.input_height, self.input_width, self.c_dim],
         )
         self.label = tf.placeholder(
             name='label', dtype=tf.float32, shape=[self.batch_size, self.num_class],
@@ -39,7 +42,7 @@ class Model(object):
 
     def get_feed_dict(self, batch_chunk, step=None, is_training=None):
         fd = {
-            self.image: batch_chunk['image'], # [B, h, w]
+            self.image: batch_chunk['image'], # [B, h, w, c]
             self.label: batch_chunk['label'], # [B, n]
         }
         if is_training is not None:
@@ -51,9 +54,12 @@ class Model(object):
         n = self.num_class
         h = self.input_height
         w = self.input_width
+        deconv_info = self.deconv_info
+        conv_info = self.conv_info
+        c_dim = self.c_dim
         n_z = 100
 
-        # G takes ramdon noise and tries to generate images [B, h, w]
+        # G takes ramdon noise and tries to generate images [B, h, w, c]
         def G(z, scope='Generator'):
             with tf.variable_scope(scope) as scope:
                 print ('\033[93m'+scope.name+'\033[0m')
@@ -81,10 +87,13 @@ class Model(object):
                 with slim.arg_scope([slim.fully_connected],
                                     activation_fn=lrelu, weights_initializer=layers.xavier_initializer()):
                     d_1 = slim.fully_connected(img, 400, scope='d_1')
+                    d_1 = slim.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1/')
                     if not reuse: print (scope.name, d_1)
                     d_2 = slim.fully_connected(d_1, 100, scope='d_2')
+                    d_2 = slim.dropout(d_2, keep_prob=0.5, is_training=is_train, scope='d_2/')
                     if not reuse: print (scope.name, d_2)
                     d_3 = slim.fully_connected(d_2, 25, scope='d_3')
+                    d_3 = slim.dropout(d_3, keep_prob=0.5, is_training=is_train, scope='d_3/')
                     if not reuse: print (scope.name, d_3)
                     d_4 = slim.fully_connected(d_3, n+1, scope='d_4',
                                                activation_fn=None)
@@ -95,36 +104,34 @@ class Model(object):
 
         # Generator {{{
         # =========
-        z = tf.random_normal(shape=[self.batch_size, n_z])
-        self.z = z
+        z = tf.random_uniform([self.batch_size, n_z], minval=-1, maxval=1, dtype=tf.float32)
         fake_image = G(z)
-        assert self.image.get_shape().as_list() == fake_image.get_shape().as_list(), fake_image.get_shape().as_list()
+        self.fake_img = fake_image
         # }}}
 
         # Discriminator {{{
         # =========
         d_real, d_real_logits = D(self.image, scope='Discriminator', reuse=False)
+        d_fake, d_fake_logits = D(fake_image, scope='Discriminator', reuse=True)
         self.all_preds = d_real
         self.all_targets = self.label
-        d_fake, d_fake_logits = D(fake_image, scope='Discriminator', reuse=True)
-        d_real_logits.get_shape().assert_is_compatible_with([self.batch_size, n+1])
-        d_fake_logits.get_shape().assert_is_compatible_with([self.batch_size, n+1])
         # }}}
 
         # build loss and self.accuracy{{{
         # Supervised loss
         # cross-entropy
-        self.S_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=d_real_logits[:, :-1], labels=self.label))
+        self.S_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                     logits=d_real_logits[:, :-1], labels=self.label))
 
         # GAN loss
         alpha = 0.9
         d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_real_logits[:, -1], labels=alpha*tf.ones_like(d_real[:, -1])))
+                                     logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
         d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
+                                     logits=d_fake_logits[:, -1], labels=alpha*tf.ones_like(d_fake[:, -1], dtype=tf.float32)))
         self.d_loss = d_loss_real + d_loss_fake + self.S_loss
         self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_fake_logits[:, -1], labels=tf.ones_like(d_fake[:, -1])))
+                                     logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
         GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
 
         # Classification accuracy
@@ -139,8 +146,9 @@ class Model(object):
         tf.summary.scalar("loss/d_loss_real", tf.reduce_mean(d_loss_real))
         tf.summary.scalar("loss/d_loss_fake", tf.reduce_mean(d_loss_fake))
         tf.summary.scalar("loss/g_loss", tf.reduce_mean(self.g_loss))
-        tf.summary.image("generated_img", 
-            tf.expand_dims(tf.reshape(fake_image, shape=[self.batch_size, h, w]), dim=-1))
-        tf.summary.image("real_img/", 
-            tf.expand_dims(tf.reshape(self.image, shape=[self.batch_size, h, w]), dim=-1), max_outputs=1)
+        tf.summary.image("img/fake", fake_image)
+        tf.summary.image("img/real", self.image, max_outputs=1)
+        tf.summary.image("label/target_real", tf.reshape(self.label, [1, self.batch_size, n, 1]))
+        tf.summary.image("label/pred_real", tf.reshape(d_real, [1, self.batch_size, n+1, 1]))
+        tf.summary.image("label/pred_fake", tf.reshape(d_fake, [1, self.batch_size, n+1, 1]))
         print ('\033[93mSuccessfully loaded the model.\033[0m')
