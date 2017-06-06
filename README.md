@@ -44,11 +44,17 @@ Test models with saved checkpoints:
 
 Train and test your own datasets:
 
+* Create a directory
     $ mkdir datasets/YOUR_DATASET
-    ... format your data to datasets/YOUR_DATASET ...
-    ... add a data loading file datasets/YOUR_DATASET.py ...
-    $ python trainer.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
-    $ python evaler.py --dataset YOUR_DATASET --input_height h --input_width w --num_class c
+
+* Store your data as an h5py file datasets/YOUR_DATASET/data.hy and each data point contains
+    * 'image': has shape [h, w, c], where c is the number of channels (grayscale images: 1, color images: 3)
+    * 'label': represented as an one-hot vector
+* Maintain a list datasets/YOUR_DATASET/id.txt listing ids of all data points
+* Modify trainer.py including args, data_info, etc.
+* Finally, train and test models:
+    $ python trainer.py --dataset YOUR_DATASET
+    $ python evaler.py --dataset YOUR_DATASET
 
 ## Results
 
