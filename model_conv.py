@@ -123,10 +123,7 @@ class Model(object):
                                      logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
         d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
                                      logits=d_fake_logits[:, -1], labels=alpha*tf.ones_like(d_fake[:, -1], dtype=tf.float32)))
-        # self.d_loss = d_loss_real + d_loss_fake + self.S_loss
-        # XXX w/o supervised
-        # self.d_loss = self.S_loss
-        self.d_loss = d_loss_real + d_loss_fake
+        self.d_loss = d_loss_real + d_loss_fake + self.S_loss
         self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
                                      logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
         GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
