@@ -63,9 +63,13 @@ $ python evaler.py --dataset YOUR_DATASET
 
 ### MNIST
 
-* Generated samples
+* Generated samples (100th epochs)
 
 <img src="figure/result/mnist/samples.png" height="250"/>
+
+* First 40 epochs
+
+<img src="figure/result/mnist/training.gif" height="250"/>
 
 ## Training details
 
