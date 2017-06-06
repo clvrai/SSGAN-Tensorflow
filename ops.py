@@ -25,8 +25,11 @@ def conv2d(input, output_shape, is_train, k_h=5, k_w=5, stddev=0.02, name="conv2
         bn = tf.contrib.layers.batch_norm(conv, center=True, scale=True, decay=0.9, is_training=is_train, updates_collections=None)
     return bn
 
-def deconv2d(input, output_shape, k, s, name="deconv2d", activation_fn='lrelu'):
+def deconv2d(input, deconv_info, name="deconv2d", activation_fn='lrelu'):
     with tf.variable_scope(name):
+        output_shape = deconv_info[0]
+        k = deconv_info[1]
+        s = deconv_info[2]
         deconv = layers.conv2d_transpose(input,
             num_outputs=output_shape,
             kernel_size=[k, k], stride=[s, s], padding='VALID')

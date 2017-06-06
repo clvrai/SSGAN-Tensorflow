@@ -239,7 +239,7 @@ def main():
     parser.add_argument('--model', type=str, default='conv', choices=['mlp', 'conv'])
     parser.add_argument('--prefix', type=str, default='default')
     parser.add_argument('--checkpoint', type=str, default=None)
-    parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist'])
+    parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist', 'cifar10'])
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=1)
     parser.add_argument('--lr_weght_decay', action='store_true', default=False)
@@ -253,12 +253,18 @@ def main():
 
     if config.dataset == 'mnist':
         from datasets.mnist import create_default_splits
-        config.input_height = 28
-        config.input_width = 28
-        config.num_class = 10
-        dataset_train, dataset_test = create_default_splits()
+        config.data_info = np.array([28, 28, 10, 1])
+        config.conv_info = np.array([32, 64, 128])
+        config.deconv_info = np.array([[100, 2, 1], [25, 3, 2], [6, 4, 2], [1, 6, 2]])
+    elif config.dataset == 'cifar10':
+        from datasets.cifar10 import create_default_splits
+        config.data_info = np.array([32, 32, 10, 3])
+        config.conv_info = np.array([32, 96, 288])
+        config.deconv_info = np.array([[200, 2, 1], [100, 4, 2], [50, 4, 2], [3, 6, 2]])
     else:
         raise ValueError(config.dataset)
+
+    dataset_train, dataset_test = create_default_splits()
 
     trainer = Trainer(config,
                       dataset_train, dataset_test)
