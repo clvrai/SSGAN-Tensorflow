@@ -22,10 +22,11 @@ def conv2d(input, output_shape, is_train, k_h=5, k_w=5, stddev=0.02, name="conv2
 
         biases = tf.get_variable('biases', [output_shape], initializer=tf.constant_initializer(0.0))
         conv = lrelu(tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape()))
-        bn = tf.contrib.layers.batch_norm(conv, center=True, scale=True, decay=0.9, is_training=is_train, updates_collections=None)
+        bn = tf.contrib.layers.batch_norm(conv, center=True, scale=True, 
+            decay=0.9, is_training=is_train, updates_collections=None)
     return bn
 
-def deconv2d(input, deconv_info, name="deconv2d", activation_fn='lrelu'):
+def deconv2d(input, deconv_info, is_train, name="deconv2d", activation_fn='relu'):
     with tf.variable_scope(name):
         output_shape = deconv_info[0]
         k = deconv_info[1]
@@ -33,8 +34,10 @@ def deconv2d(input, deconv_info, name="deconv2d", activation_fn='lrelu'):
         deconv = layers.conv2d_transpose(input,
             num_outputs=output_shape,
             kernel_size=[k, k], stride=[s, s], padding='VALID')
-        if activation_fn == 'lrelu':
-            deconv = lrelu(deconv)
+        if activation_fn == 'relu':
+            deconv = tf.nn.relu(deconv)
+            bn = tf.contrib.layers.batch_norm(deconv, center=True, scale=True, 
+                decay=0.9, is_training=is_train, updates_collections=None)
         elif activation_fn == 'tanh':
             deconv = tf.nn.tanh(deconv)
         return deconv

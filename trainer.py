@@ -71,7 +71,7 @@ class Trainer(object):
                 self.learning_rate,
                 global_step=self.global_step,
                 decay_steps=10000,
-                decay_rate=0.9,
+                decay_rate=0.5,
                 staircase=True,
                 name='decaying_learning_rate'
             )
@@ -96,9 +96,8 @@ class Trainer(object):
         self.d_optimizer = tf.contrib.layers.optimize_loss(
             loss=self.model.d_loss,
             global_step=self.global_step,
-            learning_rate=self.learning_rate*0.5,
+            learning_rate=self.learning_rate*0.25,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
-            # optimizer=tf.train.RMSPropOptimizer,
             clip_gradients=20.0,
             name='d_optimize_loss',
             variables=d_var
@@ -109,7 +108,6 @@ class Trainer(object):
             global_step=self.global_step,
             learning_rate=self.learning_rate,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
-            # optimizer=tf.train.RMSPropOptimizer,
             clip_gradients=20.0,
             name='g_optimize_loss',
             variables=g_var
@@ -245,12 +243,6 @@ def main():
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=1)
     parser.add_argument('--lr_weight_decay', action='store_true', default=False)
-
-    """
-    parser.add_argument('--input_height', type=int, default=28)
-    parser.add_argument('--input_width', type=int, default=28)
-    parser.add_argument('--num_class', type=int, default=10)
-    """
     config = parser.parse_args()
 
     if config.dataset == 'mnist':
@@ -261,8 +253,8 @@ def main():
     elif config.dataset == 'cifar10':
         from datasets.cifar10 import create_default_splits
         config.data_info = np.array([32, 32, 10, 3])
-        config.conv_info = np.array([32, 96, 288])
-        config.deconv_info = np.array([[512, 2, 1], [256, 4, 2], [128, 4, 2], [3, 6, 2]])
+        config.conv_info = np.array([32, 128, 512])
+        config.deconv_info = np.array([[1024, 2, 1], [512, 4, 2], [256, 4, 2], [3, 6, 2]])
     else:
         raise ValueError(config.dataset)
 

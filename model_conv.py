@@ -64,13 +64,13 @@ class Model(object):
             with tf.variable_scope(scope) as scope:
                 print ('\033[93m'+scope.name+'\033[0m')
                 z = tf.reshape(z, [self.batch_size, 1, 1, -1])
-                g_1 = deconv2d(z, deconv_info[0], name='g_1_deconv') 
+                g_1 = deconv2d(z, deconv_info[0], is_train, name='g_1_deconv') 
                 print (scope.name, g_1)
-                g_2 = deconv2d(g_1, deconv_info[1], name='g_2_deconv')
+                g_2 = deconv2d(g_1, deconv_info[1], is_train, name='g_2_deconv')
                 print (scope.name, g_2)
-                g_3 = deconv2d(g_2, deconv_info[2], name='g_3_deconv')
+                g_3 = deconv2d(g_2, deconv_info[2], is_train, name='g_3_deconv')
                 print (scope.name, g_3)
-                g_4 = deconv2d(g_3, deconv_info[3], name='g_4_deconv', activation_fn='tanh')
+                g_4 = deconv2d(g_3, deconv_info[3], is_train, name='g_4_deconv', activation_fn='tanh')
                 print (scope.name, g_4)
                 output = g_4
                 assert output.get_shape().as_list() == self.image.get_shape().as_list(), output.get_shape().as_list()
