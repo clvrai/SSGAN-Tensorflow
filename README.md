@@ -29,24 +29,25 @@ Note that this implementation only follows the main idea of the original paper w
 ## Usage
 
 Download datasets with:
-
-    $ python download.py --dataset mnist cifar
-
+```bash
+$ python download.py --dataset mnist cifar
+```
 Train models with downloaded dataset:
-
-    $ python trainer.py --dataset mnist
-    $ python trainer.py --dataset cifar
-
+```bash
+$ python trainer.py --dataset mnist
+$ python trainer.py --dataset cifar
+```
 Test models with saved checkpoints:
-
-    $ python evaler.py --dataset mnist --checkpoint ckpt_dir
-    $ python evaler.py --dataset cifar --checkpoint ckpt_dir
-
+```bash
+$ python evaler.py --dataset mnist --checkpoint ckpt_dir
+$ python evaler.py --dataset cifar --checkpoint ckpt_dir
+```
 Train and test your own datasets:
 
 * Create a directory
-
-    $ mkdir datasets/YOUR_DATASET
+```bash
+$ mkdir datasets/YOUR_DATASET
+```
 
 * Store your data as an h5py file datasets/YOUR_DATASET/data.hy and each data point contains
     * 'image': has shape [h, w, c], where c is the number of channels (grayscale images: 1, color images: 3)
@@ -54,10 +55,10 @@ Train and test your own datasets:
 * Maintain a list datasets/YOUR_DATASET/id.txt listing ids of all data points
 * Modify trainer.py including args, data_info, etc.
 * Finally, train and test models:
-
-    $ python trainer.py --dataset YOUR_DATASET
-    $ python evaler.py --dataset YOUR_DATASET
-
+```bash
+$ python trainer.py --dataset YOUR_DATASET
+$ python evaler.py --dataset YOUR_DATASET
+```
 ## Results
 
 ### MNIST
