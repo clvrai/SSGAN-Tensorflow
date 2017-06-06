@@ -39,12 +39,11 @@ class Dataset(object):
         m = self.data[id]['image'].value/255.
         l = self.data[id]['label'].value.astype(np.float32)
 
-        # Data augmentation: rotate 90, 180, 270
+        # Data augmentation: rotate 0, 90, 180, 270
         rot_num = np.floor(np.random.rand(1)*4)
-        assert rot_num >= 0 and rot_num < 4, rot_num
         for i in range(rot_num):
             m = np.rot90(m, axes=(0, 1))
-        m = m + np.random.randn(*m.shape) * 5e-2
+        m = m + np.random.randn(*m.shape) * 3e-2
         return m, l
 
     @property
@@ -60,7 +59,6 @@ class Dataset(object):
             len(self)
         )
 
-
 def create_default_splits(is_train=True):
     ids = all_ids()
     n = len(ids)
@@ -72,7 +70,6 @@ def create_default_splits(is_train=True):
     dataset_train = Dataset(ids[:num_trains], name='train', is_train=False)
     dataset_test  = Dataset(ids[num_trains:], name='test', is_train=False)
     return dataset_train, dataset_test
-
 
 def all_ids():
     id_filename = 'id.txt'

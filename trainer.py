@@ -96,7 +96,7 @@ class Trainer(object):
         self.d_optimizer = tf.contrib.layers.optimize_loss(
             loss=self.model.d_loss,
             global_step=self.global_step,
-            learning_rate=self.learning_rate*0.25,
+            learning_rate=self.learning_rate*0.02,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
             clip_gradients=20.0,
             name='d_optimize_loss',

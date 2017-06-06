@@ -53,7 +53,6 @@ class Dataset(object):
             len(self)
         )
 
-
 def create_default_splits(is_train=True):
     ids = all_ids()
     n = len(ids)
@@ -65,7 +64,6 @@ def create_default_splits(is_train=True):
     dataset_train = Dataset(ids[:num_trains], name='train', is_train=False)
     dataset_test  = Dataset(ids[num_trains:], name='test', is_train=False)
     return dataset_train, dataset_test
-
 
 def all_ids():
     id_filename = 'id.txt'
