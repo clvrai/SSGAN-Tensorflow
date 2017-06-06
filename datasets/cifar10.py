@@ -38,6 +38,13 @@ class Dataset(object):
         # preprocessing and data augmentation
         m = self.data[id]['image'].value/255.
         l = self.data[id]['label'].value.astype(np.float32)
+
+        # Data augmentation: rotate 90, 180, 270
+        rot_num = np.floor(np.random.rand(1)*4)
+        assert rot_num >= 0 and rot_num < 4, rot_num
+        for i in range(rot_num):
+            m = np.rot90(m, axes=(0, 1))
+        m = m + np.random.randn(*m.shape) * 5e-2
         return m, l
 
     @property
