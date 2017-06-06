@@ -45,6 +45,7 @@ Test models with saved checkpoints:
 Train and test your own datasets:
 
 * Create a directory
+
     $ mkdir datasets/YOUR_DATASET
 
 * Store your data as an h5py file datasets/YOUR_DATASET/data.hy and each data point contains
@@ -53,6 +54,7 @@ Train and test your own datasets:
 * Maintain a list datasets/YOUR_DATASET/id.txt listing ids of all data points
 * Modify trainer.py including args, data_info, etc.
 * Finally, train and test models:
+
     $ python trainer.py --dataset YOUR_DATASET
     $ python evaler.py --dataset YOUR_DATASET
 
