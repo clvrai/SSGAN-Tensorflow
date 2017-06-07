@@ -73,6 +73,17 @@ $ python evaler.py --dataset YOUR_DATASET
 
 <img src="figure/result/mnist/training.gif" height="250"/>
 
+### SVHN
+
+* Generated samples (100th epochs)
+
+<img src="figure/result/mnist/samples.png" height="250"/>
+
+* First 160 epochs
+
+<img src="figure/result/svhn/training.gif" height="250"/>
+
+
 ### CIFAR10
 
 * Generated samples (1000th epochs)
