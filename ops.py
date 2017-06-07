@@ -26,13 +26,15 @@ def conv2d(input, output_shape, is_train, k_h=5, k_w=5, stddev=0.02, name="conv2
             decay=0.9, is_training=is_train, updates_collections=None)
     return bn
 
-def deconv2d(input, deconv_info, is_train, name="deconv2d", activation_fn='relu'):
+def deconv2d(input, deconv_info, is_train, name="deconv2d", stddev=0.02,activation_fn='relu'):
     with tf.variable_scope(name):
         output_shape = deconv_info[0]
         k = deconv_info[1]
         s = deconv_info[2]
         deconv = layers.conv2d_transpose(input,
             num_outputs=output_shape,
+            weights_initializer=tf.truncated_normal_initializer(stddev=stddev),
+            biases_initializer=tf.zeros_initializer(),
             kernel_size=[k, k], stride=[s, s], padding='VALID')
         if activation_fn == 'relu':
             deconv = tf.nn.relu(deconv)

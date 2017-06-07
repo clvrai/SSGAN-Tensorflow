@@ -96,7 +96,7 @@ class Trainer(object):
         self.d_optimizer = tf.contrib.layers.optimize_loss(
             loss=self.model.d_loss,
             global_step=self.global_step,
-            learning_rate=self.learning_rate*0.02,
+            learning_rate=self.learning_rate*0.5,
             optimizer=tf.train.AdamOptimizer(beta1=0.5),
             clip_gradients=20.0,
             name='d_optimize_loss',
@@ -169,7 +169,7 @@ class Trainer(object):
 
             self.summary_writer.add_summary(summary, global_step=step)
 
-            if s % output_save_step == 0 and s > 0:
+            if s % output_save_step == 0:
                 log.infov("Saved checkpoint at %d", s)
                 save_path = self.saver.save(self.session, os.path.join(self.train_dir, 'model'), global_step=step)
                 f = h5py.File(os.path.join(self.train_dir, 'g_img_'+str(s)+'.hy'), 'w')
@@ -239,22 +239,27 @@ def main():
     parser.add_argument('--model', type=str, default='conv', choices=['mlp', 'conv'])
     parser.add_argument('--prefix', type=str, default='default')
     parser.add_argument('--checkpoint', type=str, default=None)
-    parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist', 'cifar10'])
+    parser.add_argument('--dataset', type=str, default='MNIST', choices=['MNIST', 'SVHN', 'CIFAR10'])
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=5)
     parser.add_argument('--lr_weight_decay', action='store_true', default=False)
     config = parser.parse_args()
 
-    if config.dataset == 'mnist':
+    if config.dataset == 'MNIST':
         from datasets.mnist import create_default_splits
         config.data_info = np.array([28, 28, 10, 1])
         config.conv_info = np.array([32, 64, 128])
         config.deconv_info = np.array([[100, 2, 1], [25, 3, 2], [6, 4, 2], [1, 6, 2]])
-    elif config.dataset == 'cifar10':
+    elif config.dataset == 'SVHN':
+        from datasets.svhn import create_default_splits
+        config.data_info = np.array([32, 32, 10, 3])
+        config.conv_info = np.array([64, 128, 256])
+        config.deconv_info = np.array([[384, 2, 1], [128, 4, 2], [64, 4, 2], [3, 6, 2]])
+    elif config.dataset == 'CIFAR10':
         from datasets.cifar10 import create_default_splits
         config.data_info = np.array([32, 32, 10, 3])
-        config.conv_info = np.array([32, 128, 512])
-        config.deconv_info = np.array([[1024, 2, 1], [512, 4, 2], [256, 4, 2], [3, 6, 2]])
+        config.conv_info = np.array([64, 128, 256])
+        config.deconv_info = np.array([[384, 2, 1], [128, 4, 2], [64, 4, 2], [3, 6, 2]])
     else:
         raise ValueError(config.dataset)
 

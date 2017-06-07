@@ -56,9 +56,7 @@ class Dataset(object):
 def create_default_splits(is_train=True):
     ids = all_ids()
     n = len(ids)
-    # num_trains = int(n * 0.8)
 
-    # XXX DEBUG
     num_trains = 60000
  
     dataset_train = Dataset(ids[:num_trains], name='train', is_train=False)

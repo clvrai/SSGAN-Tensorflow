@@ -8,7 +8,7 @@ import h5py
 import numpy as np
 
 parser = argparse.ArgumentParser(description='Download dataset for SSGAN.')
-parser.add_argument('--datasets', metavar='N', type=str, nargs='+', choices=['mnist', 'cifar10'])
+parser.add_argument('--datasets', metavar='N', type=str, nargs='+', choices=['MNIST', 'SVHN', 'CIFAR10'])
 
 def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, shape=None):
 
@@ -28,7 +28,7 @@ def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, sha
     for i in range(image.shape[0]):
 
         if i%(image.shape[0]/100)==0: 
-            bar.update(i/(image.shape[0]/100)+1)
+            bar.update(i/(image.shape[0]/100))
 
         grp = f.create_group(str(i))
         data_id.write(str(i)+'\n')
@@ -37,7 +37,7 @@ def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, sha
         else:
             grp['image'] = image[i]
         label_vec = np.zeros(10)
-        label_vec[label[i]] = 1
+        label_vec[label[i]%10] = 1
         grp['label'] = label_vec.astype(np.bool)
     bar.finish()
     f.close()
@@ -90,6 +90,35 @@ def download_mnist(download_path):
     for k in keys:
         cmd = ['rm', '-f', os.path.join(data_dir, k[:-3])]
         subprocess.call(cmd)
+
+def download_svhn(download_path):
+    
+    import scipy.io as sio
+    # svhn file loader
+    def svhn_loader(url, path):
+        cmd = ['curl', url, '-o', path]
+        subprocess.call(cmd)
+        m = sio.loadmat(path)
+        return m['X'], m['y']
+
+    data_dir = os.path.join(download_path, 'svhn')
+    if os.path.exists(data_dir):
+        print('SVHN was downloaded.')
+        return
+    else:
+        os.mkdir(data_dir)
+
+    data_url = 'http://ufldl.stanford.edu/housenumbers/train_32x32.mat'
+    train_image, train_label = svhn_loader(data_url, os.path.join(data_dir, 'train_32x32.mat'))
+    
+    data_url = 'http://ufldl.stanford.edu/housenumbers/test_32x32.mat'
+    test_image, test_label = svhn_loader(data_url, os.path.join(data_dir, 'test_32x32.mat'))
+
+    prepare_h5py(np.transpose(train_image, (3, 0, 1, 2)), train_label, 
+                 np.transpose(test_image, (3, 0, 1, 2)), test_label, data_dir)
+
+    cmd = ['rm', '-f', os.path.join(data_dir, '*.mat')]
+    subprocess.call(cmd)
 
 def download_cifar10(download_path):
 
@@ -147,7 +176,9 @@ if __name__ == '__main__':
     path = './datasets'
     if not os.path.exists(path): os.mkdir(path)
 
-    if 'mnist' in args.datasets:
+    if 'MNIST' in args.datasets:
         download_mnist('./datasets')
-    if 'cifar10' in args.datasets:
+    if 'SVHN' in args.datasets:
+        download_svhn('./datasets')
+    if 'CIFAR10' in args.datasets:
         download_cifar10('./datasets')

@@ -1,4 +1,7 @@
 train_dir/
+datasets/mnist
+datasets/svhn
+datasets/cifar10
 *.py[cod]
 *.sw[op]
 *.hy

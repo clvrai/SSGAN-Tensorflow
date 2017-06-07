@@ -30,16 +30,18 @@ Note that this implementation only follows the main idea of the original paper w
 
 Download datasets with:
 ```bash
-$ python download.py --dataset mnist cifar
+$ python download.py --dataset MNIST SVHN CIFAR10
 ```
 Train models with downloaded dataset:
 ```bash
 $ python trainer.py --dataset mnist
+$ python trainer.py --dataset svhn
 $ python trainer.py --dataset cifar
 ```
 Test models with saved checkpoints:
 ```bash
 $ python evaler.py --dataset mnist --checkpoint ckpt_dir
+$ python evaler.py --dataset svhn --checkpoint ckpt_dir
 $ python evaler.py --dataset cifar --checkpoint ckpt_dir
 ```
 Train and test your own datasets:
@@ -134,7 +136,7 @@ G_loss
 
 * To avoid the fast convergence of the discriminator network
     * The generator network is updated more frequently.
-    * Higher learning rate is applied to the traiing of the generator.
+    * Higher learning rate is applied to the training of the generator.
 * One-sided label smoothing is applied to the positive labels.
 * Gradient clipping trick is applied to stablize training.
 * Utilize [Adam](https://arxiv.org/abs/1412.6980) optimizer with higher momentum.

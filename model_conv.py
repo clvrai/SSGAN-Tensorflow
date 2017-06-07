@@ -38,6 +38,10 @@ class Model(object):
 
         self.is_training = tf.placeholder_with_default(bool(is_train), [], name='is_training')
 
+        self.recon_weight = tf.placeholder_with_default(
+            tf.cast(1.0, tf.float32), [])
+        tf.summary.scalar("loss/recon_wieght", self.recon_weight)
+
         self.build(is_train=is_train)
 
     def get_feed_dict(self, batch_chunk, step=None, is_training=None):
@@ -47,6 +51,8 @@ class Model(object):
         }
         if is_training is not None:
             fd[self.is_training] = is_training
+        if step is not None:
+            fd[self.recon_weight] = min(max(1e-3, (3000 - step) / 3000), 1.0)
         return fd
 
     def build(self, is_train=True):
@@ -124,8 +130,9 @@ class Model(object):
         d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
                                      logits=d_fake_logits[:, -1], labels=alpha*tf.ones_like(d_fake[:, -1], dtype=tf.float32)))
         self.d_loss = d_loss_real + d_loss_fake + self.S_loss
+        g_recon_loss = tf.reduce_mean(huber_loss(self.image, fake_image))
         self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1])))
+            logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * 50 * g_recon_loss
         GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
 
         # Classification accuracy

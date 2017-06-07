@@ -11,7 +11,7 @@ import h5py
 from util import log
 
 # __PATH__ = os.path.abspath(os.path.dirname(__file__))
-__PATH__ = './datasets/cifar10'
+__PATH__ = './datasets/svhn'
 
 rs = np.random.RandomState(123)
 
@@ -65,7 +65,7 @@ def create_default_splits(is_train=True):
     ids = all_ids()
     n = len(ids)
 
-    num_trains = 50000
+    num_trains = 73257
  
     dataset_train = Dataset(ids[:num_trains], name='train', is_train=False)
     dataset_test  = Dataset(ids[num_trains:], name='test', is_train=False)
