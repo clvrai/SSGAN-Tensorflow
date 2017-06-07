@@ -34,15 +34,15 @@ $ python download.py --dataset MNIST SVHN CIFAR10
 ```
 Train models with downloaded dataset:
 ```bash
-$ python trainer.py --dataset mnist
-$ python trainer.py --dataset svhn
-$ python trainer.py --dataset cifar
+$ python trainer.py --dataset MNIST
+$ python trainer.py --dataset SVHN
+$ python trainer.py --dataset CIFAR10
 ```
 Test models with saved checkpoints:
 ```bash
-$ python evaler.py --dataset mnist --checkpoint ckpt_dir
-$ python evaler.py --dataset svhn --checkpoint ckpt_dir
-$ python evaler.py --dataset cifar --checkpoint ckpt_dir
+$ python evaler.py --dataset MNIST --checkpoint ckpt_dir
+$ python evaler.py --dataset SVHN --checkpoint ckpt_dir
+$ python evaler.py --dataset CIFAR10 --checkpoint ckpt_dir
 ```
 Train and test your own datasets:
 
