@@ -77,7 +77,7 @@ $ python evaler.py --dataset YOUR_DATASET
 
 * Generated samples (100th epochs)
 
-<img src="figure/result/mnist/samples.png" height="250"/>
+<img src="figure/result/svhn/samples.png" height="250"/>
 
 * First 160 epochs
 
@@ -125,6 +125,36 @@ G_loss
 * Classification accuracy
 
 <img src="figure/result/mnist/accuracy.png" height="200"/>
+
+### SVHN
+
+* The supervised loss
+
+<img src="figure/result/svhn/s_loss.png" height="200"/>
+
+* The loss of Discriminator
+
+D_loss_real
+
+<img src="figure/result/svhn/d_loss_real.png" height="200"/>
+
+D_loss_fake
+
+<img src="figure/result/svhn/d_loss_fake.png" height="200"/>
+
+D_loss (total loss)
+
+<img src="figure/result/svhn/d_loss.png" height="200"/>
+
+* The loss of Generator
+
+G_loss
+
+<img src="figure/result/svhn/g_loss.png" height="200"/>
+
+* Classification accuracy
+
+<img src="figure/result/svhn/accuracy.png" height="200"/>
 
 ### CIFAR10
 
