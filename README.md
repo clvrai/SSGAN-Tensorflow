@@ -75,6 +75,10 @@ $ python evaler.py --dataset YOUR_DATASET
 
 ### CIFAR10
 
+* Generated samples (1000th epochs)
+
+<img src="figure/result/cifar10/samples.png" height="250"/>
+
 * First 200 epochs
 
 <img src="figure/result/cifar10/training.gif" height="250"/>
