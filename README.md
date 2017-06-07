@@ -162,6 +162,7 @@ G_loss
 
 * The supervised loss
 
+<img src="figure/result/cifar10/s_loss.png" height="200"/>
 
 * The loss of Discriminator
 
@@ -184,6 +185,8 @@ G_loss
 <img src="figure/result/cifar10/g_loss.png" height="200"/>
 
 * Classification accuracy
+
+<img src="figure/result/cifar10/accuracy.png" height="200"/>
 
 ## Training tricks
 
