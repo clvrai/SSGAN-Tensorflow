@@ -205,3 +205,7 @@ G_loss
 ## Author
 
 Shao-Hua Sun / [@shaohua0116](https://shaohua0116.github.io/)
+
+## Acknowledgement
+
+[@wookayin](https://github.com/wookayin) for the code structure
