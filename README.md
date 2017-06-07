@@ -73,6 +73,12 @@ $ python evaler.py --dataset YOUR_DATASET
 
 <img src="figure/result/mnist/training.gif" height="250"/>
 
+### CIFAR10
+
+* First 40 epochs
+
+<img src="figure/result/cifar10/training.gif" height="250"/>
+
 ## Training details
 
 ### MNIST
