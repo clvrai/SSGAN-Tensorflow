@@ -17,6 +17,8 @@ and the **GAN loss** of a discriminator
 
 During the training phase, we jointly minimize the total loss obtained by simply combining the two losses together.
 
+The implmented model is trained and tested on three publicly available datasets: [MNIST](http://yann.lecun.com/exdb/mnist/), [SVHN](http://ufldl.stanford.edu/housenumbers/), and [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html).
+
 Note that this implementation only follows the main idea of the original paper while differing a lot in implementation details such as model architectures, hyperparameters, applied optimizer, etc. Also, some useful training tricks applied to this implementation are stated at the end of this README.
 
 ## Prerequisites
@@ -84,7 +86,7 @@ $ python evaler.py --dataset YOUR_DATASET
 <img src="figure/result/svhn/training.gif" height="250"/>
 
 
-### CIFAR10
+### CIFAR-10
 
 * Generated samples (1000th epochs)
 
@@ -156,7 +158,7 @@ G_loss
 
 <img src="figure/result/svhn/accuracy.png" height="200"/>
 
-### CIFAR10
+### CIFAR-10
 
 * The supervised loss
 
