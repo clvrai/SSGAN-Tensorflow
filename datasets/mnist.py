@@ -53,6 +53,15 @@ class Dataset(object):
             len(self)
         )
 
+def get_data_info():
+    return np.array([28, 28, 10, 1])
+
+def get_conv_info():
+    return np.array([32, 64, 128])
+
+def get_deconv_info():
+    return np.array([[100, 2, 1], [25, 3, 2], [6, 4, 2], [1, 6, 2]])
+
 def create_default_splits(is_train=True):
     ids = all_ids()
     n = len(ids)

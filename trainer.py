@@ -246,24 +246,18 @@ def main():
     config = parser.parse_args()
 
     if config.dataset == 'MNIST':
-        from datasets.mnist import create_default_splits
-        config.data_info = np.array([28, 28, 10, 1])
-        config.conv_info = np.array([32, 64, 128])
-        config.deconv_info = np.array([[100, 2, 1], [25, 3, 2], [6, 4, 2], [1, 6, 2]])
+        import  datasets.mnist as dataset
     elif config.dataset == 'SVHN':
-        from datasets.svhn import create_default_splits
-        config.data_info = np.array([32, 32, 10, 3])
-        config.conv_info = np.array([64, 128, 256])
-        config.deconv_info = np.array([[384, 2, 1], [128, 4, 2], [64, 4, 2], [3, 6, 2]])
+        import datasets.svhn as dataset
     elif config.dataset == 'CIFAR10':
-        from datasets.cifar10 import create_default_splits
-        config.data_info = np.array([32, 32, 10, 3])
-        config.conv_info = np.array([64, 128, 256])
-        config.deconv_info = np.array([[384, 2, 1], [128, 4, 2], [64, 4, 2], [3, 6, 2]])
+        import datasets.cifar10 as dataset
     else:
         raise ValueError(config.dataset)
 
-    dataset_train, dataset_test = create_default_splits()
+    config.data_info = dataset.get_data_info()
+    config.conv_info = dataset.get_conv_info()
+    config.deconv_info = dataset.get_deconv_info()
+    dataset_train, dataset_test = dataset.create_default_splits()
 
     trainer = Trainer(config,
                       dataset_train, dataset_test)
