@@ -21,7 +21,7 @@ The implemented model is trained and tested on three publicly available datasets
 
 Note that this implementation only follows the main idea of the original paper while differing a lot in implementation details such as model architectures, hyperparameters, applied optimizer, etc. Also, some useful training tricks applied to this implementation are stated at the end of this README.
 
-/*This code is still being developed and subject to change.
+\*This code is still being developed and subject to change.
 
 ## Prerequisites
 
