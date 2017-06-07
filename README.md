@@ -75,7 +75,7 @@ $ python evaler.py --dataset YOUR_DATASET
 
 ### CIFAR10
 
-* First 40 epochs
+* First 200 epochs
 
 <img src="figure/result/cifar10/training.gif" height="250"/>
 
