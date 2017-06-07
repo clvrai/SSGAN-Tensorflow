@@ -14,7 +14,7 @@ parser.add_argument('--n', type=int, default=8)
 args = parser.parse_args()
 
 if not args.train_dir or not args.output_file:
-    raise ValueError()
+    raise ValueError("Please specify train_dir and output_file")
 
 II = []
 for file in sorted(glob.glob(os.path.join(args.train_dir, "*.hy")), key=os.path.getmtime):

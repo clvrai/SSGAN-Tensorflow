@@ -189,7 +189,8 @@ G_loss
     * The generator network is updated more frequently.
     * Higher learning rate is applied to the training of the generator.
 * One-sided label smoothing is applied to the positive labels.
-* Gradient clipping trick is applied to stablize training.
+* Gradient clipping trick is applied to stablize training
+* Reconstruction loss with annealed weight is applied as an auxiliary loss to help the generator get rid of the initial local minimum.
 * Utilize [Adam](https://arxiv.org/abs/1412.6980) optimizer with higher momentum.
 * Please refer to the codes for more details.
 
