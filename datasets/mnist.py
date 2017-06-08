@@ -31,7 +31,10 @@ class Dataset(object):
         file = os.path.join(__PATH__, filename)
         log.info("Reading %s ...", file)
 
-        self.data = h5py.File(file, 'r') 
+        try:
+            self.data = h5py.File(file, 'r') 
+        except:
+            raise IOError('Dataset not found. Please mare sure the dataset was downloaded.')
         log.info("Reading Done: %s", file)
 
     def get_data(self, id):
@@ -76,8 +79,11 @@ def all_ids():
     id_filename = 'id.txt'
 
     id_txt = os.path.join(__PATH__, id_filename)
-    with open(id_txt, 'r') as fp:
-        _ids = [s.strip() for s in fp.readlines() if s]
+    try:
+        with open(id_txt, 'r') as fp:
+            _ids = [s.strip() for s in fp.readlines() if s]
+    except:
+        raise IOError('Dataset not found. Please mare sure the dataset was downloaded.')
 
     rs.shuffle(_ids)
     return _ids

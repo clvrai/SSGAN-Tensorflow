@@ -84,8 +84,10 @@ def all_ids():
     id_filename = 'id.txt'
 
     id_txt = os.path.join(__PATH__, id_filename)
-    with open(id_txt, 'r') as fp:
-        _ids = [s.strip() for s in fp.readlines() if s]
-
+    try: 
+        with open(id_txt, 'r') as fp:
+            _ids = [s.strip() for s in fp.readlines() if s]
+    except:
+        raise IOError('Dataset not found. Please mare sure the dataset was downloaded.')
     rs.shuffle(_ids)
     return _ids
