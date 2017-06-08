@@ -34,7 +34,7 @@ class Dataset(object):
         try:
             self.data = h5py.File(file, 'r') 
         except:
-            raise IOError('Dataset not found. Please mare sure the dataset was downloaded.')
+            raise IOError('Dataset not found. Please make sure the dataset was downloaded.')
         log.info("Reading Done: %s", file)
 
     def get_data(self, id):
@@ -83,7 +83,7 @@ def all_ids():
         with open(id_txt, 'r') as fp:
             _ids = [s.strip() for s in fp.readlines() if s]
     except:
-        raise IOError('Dataset not found. Please mare sure the dataset was downloaded.')
+        raise IOError('Dataset not found. Please make sure the dataset was downloaded.')
 
     rs.shuffle(_ids)
     return _ids
