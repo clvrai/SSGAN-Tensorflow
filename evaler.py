@@ -25,48 +25,35 @@ class PoseEvalManager(object):
         self._groundtruths = []
 
     def add_batch(self, id, prediction, groundtruth):
-        assert prediction.shape == groundtruth.shape
 
         # for now, store them all (as a list of minibatch chunks)
         self._ids.append(id)
         self._predictions.append(prediction)
         self._groundtruths.append(groundtruth)
 
-    def compute_l2error(self, pred, gt):
-        errors = (pred - gt) ** 2
-        batch_size = pred.shape[0]
-        errors = (errors.reshape([batch_size, -1]).sum(axis=1) / np.prod(pred.shape[1:])) ** 0.5
-        assert errors.shape == (batch_size,)
-        return errors
-        #return np.average(errors)
+    def compute_accuracy(self, pred, gt):
+        correct_prediction = np.sum(np.argmax(pred[:, :-1], axis=1) == np.argmax(gt, axis=1))
+        return float(correct_prediction)/pred.shape[0]
 
     def report(self):
         # report L2 loss
         log.info("Computing scores...")
         score = {}
-        score['l2_loss'] = []
+        score = []
 
         for id, pred, gt in zip(self._ids, self._predictions, self._groundtruths):
-            score['l2_loss'].extend(self.compute_l2error(pred, gt))
-
-        avg_l2loss = np.average(score['l2_loss'])
-        log.infov("Average L2 loss : %.5f", avg_l2loss)
-
-
-    def dump_result(self, filename):
-        log.infov("Dumping prediction result into %s ...", filename)
-        f.h5py.File(filename, 'w')
-        f['test'] = np.concatenate(self._predictions)
-        f['test_gt'] = np.concatenate(self._groundtruths)
-        f['id'] = str(np.concatenate(self._ids))
-        log.info("Dumping prediction done.")
+            score.append(self.compute_accuracy(pred, gt))
+        avg = np.average(score)
+        log.infov("Average accuracy : %.4f", avg*100)
 
 class Evaler(object):
 
     @staticmethod
     def get_model_class(model_name):
-        if model_name == 'MLP':
-            from model import Model
+        if model_name == 'mlp':
+            from model_mlp import Model
+        if model_name == 'conv':
+            from model_conv import Model
         else:
             return ValueError(model_name)
         return Model
@@ -77,7 +64,6 @@ class Evaler(object):
                  dataset):
         self.config = config
         self.train_dir = config.train_dir
-        self.output_file = config.output_file
         log.info("self.train_dir = %s", self.train_dir)
 
         # --- input ops ---
@@ -114,7 +100,6 @@ class Evaler(object):
         if self.checkpoint_path is None and self.train_dir:
             self.checkpoint_path = tf.train.latest_checkpoint(self.train_dir)
         if self.checkpoint_path is None:
-            #raise RuntimeError("Either checkpoint_path or train_dir must be given")
             log.warn("No checkpoint is given. Just random initialization :-)")
             self.session.run(tf.global_variables_initializer())
         else:
@@ -123,7 +108,6 @@ class Evaler(object):
     def eval_run(self):
         # load checkpoint
         if self.checkpoint_path:
-            #import pudb; pudb.set_trace()
             self.saver.restore(self.session, self.checkpoint_path)
             log.info("Loaded from checkpoint!")
 
@@ -131,13 +115,8 @@ class Evaler(object):
 
         log.info("# of examples = %d", len(self.dataset))
         length_dataset = len(self.dataset)
-        if self.config.max_examples:
-            length_dataset = min(self.config.max_examples, length_dataset)
-            log.infov("Limiting the number of examples to %d ...", length_dataset)
 
-        #max_steps = int(length_dataset / self.batch_size) + 1
-        max_steps = 1
-        #assert len(self.dataset) % self.batch_size == 0
+        max_steps = int(length_dataset / self.batch_size) + 1
         log.info("max_steps = %d", max_steps)
 
         coord = tf.train.Coordinator()
@@ -150,7 +129,6 @@ class Evaler(object):
                 step, loss, step_time, batch_chunk, prediction_pred, prediction_gt = \
                     self.run_single_step(self.batch)
                 self.log_step_message(s, loss, step_time)
-                #loss_test, prediction_test = self.run_test(self.batch_test, is_train=False)
                 evaler.add_batch(batch_chunk['id'], prediction_pred, prediction_gt)
 
         except Exception as e:
@@ -160,50 +138,34 @@ class Evaler(object):
         try:
             coord.join(threads, stop_grace_period_secs=3)
         except RuntimeError as e:
-            log.warn(str(e)) # just simply ignore as of now
+            log.warn(str(e))
 
         evaler.report()
         log.infov("Evaluation complete.")
 
-        if self.config.output_file:
-            evaler.dump_result(self.config.output_file)
-
-    def run_single_step(self, batch):
+    def run_single_step(self, batch, step=None, is_train=True):
         _start_time = time.time()
 
         batch_chunk = self.session.run(batch)
 
-        [step, loss, all_preds, all_targets, _] = self.session.run(
-            [self.global_step, self.model.total_loss, self.model.all_preds, self.model.all_targets, self.step_op],
+        [step, accuracy, all_preds, all_targets, _] = self.session.run(
+            [self.global_step, self.model.accuracy, self.model.all_preds, self.model.all_targets, self.step_op],
             feed_dict=self.model.get_feed_dict(batch_chunk)
         )
 
         _end_time = time.time()
 
-        return step, loss, (_end_time - _start_time), batch_chunk, all_preds, all_targets
+        return step, accuracy, (_end_time - _start_time), batch_chunk, all_preds, all_targets
 
-    def run_test(self, batch, is_train=False):
-
-        batch_chunk = self.session.run(batch)
-
-        [loss, all_preds, all_targets] = self.session.run(
-            [self.model.total_loss, self.model.all_preds, self.model.all_targets],
-            feed_dict=self.model.get_feed_dict(batch_chunk)
-        )
-
-        #if self.summary_writer:
-        #    self.summary_writer.add_summary(summary, global_step=step)
-        return loss, all_preds, all_targets
-
-    def log_step_message(self, step, loss, step_time, is_train=False):
+    def log_step_message(self, step, accuracy, step_time, is_train=False):
         if step_time == 0: step_time = 0.001
         log_fn = (is_train and log.info or log.infov)
         log_fn((" [{split_mode:5s} step {step:4d}] " +
-                "batch total-loss (test): {test_loss:.5f} " +
+                "batch total-accuracy (test): {test_accuracy:.2f}% " +
                 "({sec_per_batch:.3f} sec/batch, {instance_per_sec:.3f} instances/sec) "
                 ).format(split_mode=(is_train and 'train' or 'val'),
                          step=step,
-                         test_loss=loss,
+                         test_accuracy=accuracy*100,
                          sec_per_batch=step_time,
                          instance_per_sec=self.batch_size / step_time,
                          )
@@ -212,29 +174,27 @@ class Evaler(object):
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=8)
-    parser.add_argument('--model', type=str, default='MLP')
-    parser.add_argument('--output_file', type=str, default=None)
+    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--model', type=str, default='conv', choices=['mlp', 'conv'])
     parser.add_argument('--checkpoint_path', type=str)
     parser.add_argument('--train_dir', type=str)
-    parser.add_argument('--dataset', type=str, default='mnist', choices=['mnist'])
+    parser.add_argument('--dataset', type=str, default='CIFAR10', choices=['MNIST', 'SVHN', 'CIFAR10'])
     parser.add_argument('--data_id', nargs='*', default=None)
-    parser.add_argument('--max_examples', type=int, default=None)
-    """
-    parser.add_argument('--input_height', type=int, default=28)
-    parser.add_argument('--input_width', type=int, default=28)
-    parser.add_argument('--num_class', type=int, default=10)
-    """
     config = parser.parse_args()
 
-    if config.dataset == 'mnist':
-        from mnist_dataset import create_default_splits
-        config.input_height = 28
-        config.input_width = 28
-        config.num_class = 10
-        dataset_train, dataset_test = create_default_splits()
+    if config.dataset == 'MNIST':
+        import  datasets.mnist as dataset
+    elif config.dataset == 'SVHN':
+        import datasets.svhn as dataset
+    elif config.dataset == 'CIFAR10':
+        import datasets.cifar10 as dataset
     else:
         raise ValueError(config.dataset)
+
+    config.data_info = dataset.get_data_info()
+    config.conv_info = dataset.get_conv_info()
+    config.deconv_info = dataset.get_deconv_info()
+    dataset_train, dataset_test = dataset.create_default_splits()
 
     evaler = Evaler(config, dataset_test)
 
