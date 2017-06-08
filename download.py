@@ -44,13 +44,21 @@ def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, sha
     data_id.close()
     return
 
-def download_mnist(download_path):
-    data_dir = os.path.join(download_path, 'mnist')
+def check_file(data_dir):
     if os.path.exists(data_dir):
-        print('MNIST was downloaded.')
-        return
+        if os.path.isfile(os.path.join('data.hy')) and \
+            os.path.isfile(os.path.join('id.txt')):
+            return True
     else:
         os.mkdir(data_dir)
+    return False
+
+def download_mnist(download_path):
+    data_dir = os.path.join(download_path, 'mnist')
+
+    if check_file(data_dir):
+        print('MNIST was downloaded.')
+        return
 
     data_url = 'http://yann.lecun.com/exdb/mnist/'
     keys = ['train-images-idx3-ubyte.gz', 'train-labels-idx1-ubyte.gz',
@@ -101,12 +109,9 @@ def download_svhn(download_path):
         m = sio.loadmat(path)
         return m['X'], m['y']
 
-    data_dir = os.path.join(download_path, 'svhn')
-    if os.path.exists(data_dir):
+    if check_file(data_dir):
         print('SVHN was downloaded.')
         return
-    else:
-        os.mkdir(data_dir)
 
     data_url = 'http://ufldl.stanford.edu/housenumbers/train_32x32.mat'
     train_image, train_label = svhn_loader(data_url, os.path.join(data_dir, 'train_32x32.mat'))
@@ -129,12 +134,10 @@ def download_cifar10(download_path):
             dict = cPickle.load(fo)
         return dict
 
-    data_dir = os.path.join(download_path, 'cifar10')
-    if os.path.exists(data_dir):
-        print('CIFAR10 was downloaded.')
-        # return
-    else:
-        os.mkdir(data_dir)
+    if check_file(data_dir):
+        print('CIFAR was downloaded.')
+        return
+
     data_url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
     k = 'cifar-10-python.tar.gz'
     target_path = os.path.join(data_dir, k)
