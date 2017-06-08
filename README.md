@@ -36,7 +36,7 @@ Download datasets with:
 ```bash
 $ python download.py --dataset MNIST SVHN CIFAR10
 ```
-Train models with downloaded dataset:
+Train models with downloaded datasets:
 ```bash
 $ python trainer.py --dataset MNIST
 $ python trainer.py --dataset SVHN
