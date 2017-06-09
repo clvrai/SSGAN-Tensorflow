@@ -76,12 +76,21 @@ class Model(object):
 
     def build(self, is_train=True):
 
+        n = self.num_class
+        h = self.input_height
+        w = self.input_width
+        deconv_info = self.deconv_info
+        conv_info = self.conv_info
+        c_dim = self.c_dim
+        n_z = 100
+
         # build loss and accuracy {{{
-        def build_loss(d_real_logits, d_fake_logits, label):
+        def build_loss(d_real, d_real_logits, d_fake, d_fake_logits, label):
             # Supervised loss
             # cross-entropy
-            s_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                         logits=d_real_logits[:, :-1], labels=label))
+            s_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                                    logits=d_real_logits, 
+                                    labels=tf.concat([label, tf.zeros([self.batch_size, 1])], axis=1)))
 
             # GAN loss
             alpha = 0.9
@@ -94,7 +103,7 @@ class Model(object):
             # Weight annealing
             g_recon_loss = tf.reduce_mean(huber_loss(self.image, fake_image))
             g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * 10 * g_recon_loss
+                logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * 0 * g_recon_loss
             GAN_loss = tf.reduce_mean(d_loss + g_loss)
 
             # Classification accuracy
@@ -102,14 +111,6 @@ class Model(object):
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             return s_loss, d_loss_real, d_loss_fake, d_loss, g_loss, GAN_loss, accuracy
         # }}}
-
-        n = self.num_class
-        h = self.input_height
-        w = self.input_width
-        deconv_info = self.deconv_info
-        conv_info = self.conv_info
-        c_dim = self.c_dim
-        n_z = 100
 
         # G takes ramdon noise and tries to generate images [B, h, w, c]
         def G(z, scope='Generator'):
@@ -146,7 +147,7 @@ class Model(object):
                 if not reuse: print (scope.name, d_4)
                 output = d_4
                 assert output.get_shape().as_list() == [self.batch_size, n+1]
-                return tf.nn.sigmoid(output), tf.nn.softmax(output)
+                return tf.nn.sigmoid(output), output
 
         # Generator {{{
         # =========
@@ -164,7 +165,7 @@ class Model(object):
         # }}}
 
         self.S_loss, d_loss_real, d_loss_fake, self.d_loss, self.g_loss, GAN_loss, self.accuracy = \
-            build_loss(d_real_logits, d_fake_logits, self.label)
+            build_loss(d_real, d_real_logits, d_fake, d_fake_logits, self.label)
 
         tf.summary.scalar("loss/accuracy", self.accuracy)
         tf.summary.scalar("loss/GAN_loss", GAN_loss)
