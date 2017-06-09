@@ -11,23 +11,6 @@ import tensorflow.contrib.slim as slim
 from ops import *
 from util import log
 
-# class GANModel(object):
-#     def __init__(self, config):
-#         pass
-#     def d_func(self):
-#         pass
-#     def g_func(self):
-#         pass
-# 
-#     def build_loss(self):
-#         pass
-# 
-#     def build_graph(self):
-#         # call g
-#         # call d
-#         # call loss
-#         return xxx
-
 class Model(object):
 
     def __init__(self, config,
@@ -71,7 +54,7 @@ class Model(object):
 
         # Weight annealing
         if step is not None:
-            fd[self.recon_weight] = min(max(1e-3, (1500 - step) / 1500), 1.0)
+            fd[self.recon_weight] = min(max(1e-3, (1500 - step) / 1500), 1.0)*10
         return fd
 
     def build(self, is_train=True):
@@ -103,7 +86,7 @@ class Model(object):
             # Weight annealing
             g_recon_loss = tf.reduce_mean(huber_loss(self.image, fake_image))
             g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * 0 * g_recon_loss
+                logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * g_recon_loss
             GAN_loss = tf.reduce_mean(d_loss + g_loss)
 
             # Classification accuracy

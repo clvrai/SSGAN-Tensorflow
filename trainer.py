@@ -12,8 +12,8 @@ from six.moves import xrange
 from util import log
 from pprint import pprint
 
+from model import Model
 import tensorflow.contrib.slim as slim
-
 from input_ops import create_input_ops
 
 import os
@@ -23,25 +23,13 @@ import tensorflow as tf
 import h5py
 
 class Trainer(object):
-
-    @staticmethod
-    def get_model_class(model_name):
-        if model_name == 'mlp':
-            from model_mlp import Model
-        elif model_name == 'conv':
-            from model_conv import Model
-        else:
-            raise ValueError(model_name)
-        return Model
-
     def __init__(self,
                  config,
                  dataset,
                  dataset_test):
         self.config = config
         hyper_parameter_str = config.dataset+'_lr_'+str(config.learning_rate)+'_update_G'+str(config.update_rate)+'_D'+str(1)
-        self.train_dir = './train_dir/%s-%s-%s-%s' % (
-            config.model,
+        self.train_dir = './train_dir/%s-%s-%s' % (
             config.prefix,
             hyper_parameter_str,
             time.strftime("%Y%m%d-%H%M%S")
@@ -59,8 +47,6 @@ class Trainer(object):
                                               is_training=False)
 
         # --- create model ---
-        Model = self.get_model_class(config.model)
-        log.infov("Using Model class : %s", Model)
         self.model = Model(config)
 
         # --- optimizer ---
@@ -233,7 +219,6 @@ def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--model', type=str, default='conv', choices=['mlp', 'conv'])
     parser.add_argument('--prefix', type=str, default='default')
     parser.add_argument('--checkpoint', type=str, default=None)
     parser.add_argument('--dataset', type=str, default='CIFAR10', choices=['MNIST', 'SVHN', 'CIFAR10'])
