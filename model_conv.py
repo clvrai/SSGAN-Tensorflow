@@ -11,6 +11,23 @@ import tensorflow.contrib.slim as slim
 from ops import *
 from util import log
 
+# class GANModel(object):
+#     def __init__(self, config):
+#         pass
+#     def d_func(self):
+#         pass
+#     def g_func(self):
+#         pass
+# 
+#     def build_loss(self):
+#         pass
+# 
+#     def build_graph(self):
+#         # call g
+#         # call d
+#         # call loss
+#         return xxx
+
 class Model(object):
 
     def __init__(self, config,
@@ -59,6 +76,33 @@ class Model(object):
 
     def build(self, is_train=True):
 
+        # build loss and accuracy {{{
+        def build_loss(d_real_logits, d_fake_logits, label):
+            # Supervised loss
+            # cross-entropy
+            s_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                         logits=d_real_logits[:, :-1], labels=label))
+
+            # GAN loss
+            alpha = 0.9
+            d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                         logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
+            d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                                         logits=d_fake_logits[:, -1], labels=alpha*tf.ones_like(d_fake[:, -1], dtype=tf.float32)))
+            d_loss = d_loss_real + d_loss_fake + s_loss
+
+            # Weight annealing
+            g_recon_loss = tf.reduce_mean(huber_loss(self.image, fake_image))
+            g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+                logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * 10 * g_recon_loss
+            GAN_loss = tf.reduce_mean(d_loss + g_loss)
+
+            # Classification accuracy
+            correct_prediction = tf.equal(tf.argmax(d_real_logits[:, :-1], 1), tf.argmax(self.label,1))
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+            return s_loss, d_loss_real, d_loss_fake, d_loss, g_loss, GAN_loss, accuracy
+        # }}}
+
         n = self.num_class
         h = self.input_height
         w = self.input_width
@@ -102,7 +146,7 @@ class Model(object):
                 if not reuse: print (scope.name, d_4)
                 output = d_4
                 assert output.get_shape().as_list() == [self.batch_size, n+1]
-                return tf.nn.sigmoid(output), output
+                return tf.nn.sigmoid(output), tf.nn.softmax(output)
 
         # Generator {{{
         # =========
@@ -119,30 +163,8 @@ class Model(object):
         self.all_targets = self.label
         # }}}
 
-        # build loss and self.accuracy{{{
-        # Supervised loss
-        # cross-entropy
-        self.S_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_real_logits[:, :-1], labels=self.label))
-
-        # GAN loss
-        alpha = 0.9
-        d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
-        d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                     logits=d_fake_logits[:, -1], labels=alpha*tf.ones_like(d_fake[:, -1], dtype=tf.float32)))
-        self.d_loss = d_loss_real + d_loss_fake + self.S_loss
-
-        # Weight annealing
-        g_recon_loss = tf.reduce_mean(huber_loss(self.image, fake_image))
-        self.g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-            logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * 10 * g_recon_loss
-        GAN_loss = tf.reduce_mean(self.d_loss + self.g_loss)
-
-        # Classification accuracy
-        correct_prediction = tf.equal(tf.argmax(d_real_logits[:, :-1], 1), tf.argmax(self.label,1))
-        self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        # }}}
+        self.S_loss, d_loss_real, d_loss_fake, self.d_loss, self.g_loss, GAN_loss, self.accuracy = \
+            build_loss(d_real_logits, d_fake_logits, self.label)
 
         tf.summary.scalar("loss/accuracy", self.accuracy)
         tf.summary.scalar("loss/GAN_loss", GAN_loss)

@@ -42,4 +42,6 @@ def deconv2d(input, deconv_info, is_train, name="deconv2d", stddev=0.02,activati
                 decay=0.9, is_training=is_train, updates_collections=None)
         elif activation_fn == 'tanh':
             deconv = tf.nn.tanh(deconv)
+        else:
+            raise ValueError('Invalid activation function.')
         return deconv

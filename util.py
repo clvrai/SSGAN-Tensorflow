@@ -33,7 +33,7 @@ formatter = ColoredFormatter(
 )
 ch.setFormatter(formatter)
 
-log = logging.getLogger('attcap')
+log = logging.getLogger('ssgan')
 log.setLevel(logging.DEBUG)
 log.handlers = []       # No duplicated handlers
 log.propagate = False   # workaround for duplicated logs in ipython

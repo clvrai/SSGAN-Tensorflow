@@ -75,10 +75,7 @@ class Trainer(object):
                 staircase=True,
                 name='decaying_learning_rate'
             )
-        # print all the trainable variables
-        #tf.contrib.slim.model_analyzer.analyze_vars(tf.trainable_variables(), print_info=True)
 
-        #self.check_op = tf.add_check_numerics_ops()
         self.check_op = tf.no_op()
 
         # --- checkpoint and monitoring ---

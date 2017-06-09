@@ -16,7 +16,7 @@ import numpy as np
 import tensorflow as tf
 import h5py
 
-class PoseEvalManager(object):
+class EvalManager(object):
 
     def __init__(self):
         # collection of batches (not flattened)
@@ -123,7 +123,7 @@ class Evaler(object):
         threads = tf.train.start_queue_runners(self.session,
                                                coord=coord, start=True)
 
-        evaler = PoseEvalManager()
+        evaler = EvalManager()
         try:
             for s in xrange(max_steps):
                 step, loss, step_time, batch_chunk, prediction_pred, prediction_gt = \
