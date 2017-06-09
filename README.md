@@ -201,10 +201,11 @@ G_loss
 * Utilize [Adam](https://arxiv.org/abs/1412.6980) optimizer with higher momentum.
 * Please refer to the codes for more details.
 
-## Related articles
+## Related works
 * [Unsupervised and Semi-supervised Learning with Categorical Generative Adversarial Networks](https://arxiv.org/abs/1511.06390) by Springenberg
 * [Semi-Supervised Learning with Generative Adversarial Networks](https://arxiv.org/abs/1606.01583) by Odena
 * [Good Semi-supervised Learning that Requires a Bad GAN](https://arxiv.org/abs/1705.09783) by Dai *et. al.*
+* My implementation of [Deep Convolutional Generative Adversarial Networks](https://github.com/shaohua0116/DCGAN-Tensorflow) in Tensorflow
 * The architecture diagram is modified from the one drawn in [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)
 
 ## Author
