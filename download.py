@@ -100,7 +100,8 @@ def download_mnist(download_path):
         subprocess.call(cmd)
 
 def download_svhn(download_path):
-    
+    data_dir = os.path.join(download_path, 'svhn')
+
     import scipy.io as sio
     # svhn file loader
     def svhn_loader(url, path):
