@@ -54,7 +54,7 @@ class Model(object):
 
         # Weight annealing
         if step is not None:
-            fd[self.recon_weight] = min(max(1e-3, (1500 - step) / 1500), 1.0)*10
+            fd[self.recon_weight] = min(max(0, (1500 - step) / 1500), 1.0)*10
         return fd
 
     def build(self, is_train=True):
@@ -68,29 +68,27 @@ class Model(object):
         n_z = 100
 
         # build loss and accuracy {{{
-        def build_loss(d_real, d_real_logits, d_fake, d_fake_logits, label):
-            # Supervised loss
-            # cross-entropy
-            s_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
-                                    logits=d_real_logits, 
-                                    labels=tf.concat([label, tf.zeros([self.batch_size, 1])], axis=1)))
-
-            # GAN loss
+        def build_loss(d_real, d_real_logits, d_fake, d_fake_logits, label, real_image, fake_image):
             alpha = 0.9
-            d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                         logits=d_real_logits[:, -1], labels=tf.zeros_like(d_real[:, -1])))
-            d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                                         logits=d_fake_logits[:, -1], labels=alpha*tf.ones_like(d_fake[:, -1], dtype=tf.float32)))
-            d_loss = d_loss_real + d_loss_fake + s_loss
+            real_label = tf.concat([label, tf.zeros([self.batch_size, 1])], axis=1)
+            fake_label = tf.concat([(1-alpha)*tf.ones([self.batch_size, n])/n, alpha*tf.ones([self.batch_size, 1])], axis=1)
+
+            # Discriminator/classifier loss
+            s_loss = tf.reduce_mean(huber_loss(label, d_real[:, :-1]))
+            d_loss_real = tf.nn.softmax_cross_entropy_with_logits(logits=d_real_logits, labels=real_label)
+            d_loss_fake = tf.nn.softmax_cross_entropy_with_logits(logits=d_fake_logits, labels=fake_label)
+            d_loss = tf.reduce_mean(d_loss_real + d_loss_fake)
+
+            # Generator loss
+            g_loss = tf.reduce_mean(tf.log(d_fake[:, -1]))
 
             # Weight annealing
-            g_recon_loss = tf.reduce_mean(huber_loss(self.image, fake_image))
-            g_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=d_fake_logits[:, -1], labels=tf.zeros_like(d_fake[:, -1]))) + self.recon_weight * g_recon_loss
+            g_loss += tf.reduce_mean(huber_loss(real_image, fake_image)) * self.recon_weight
+
             GAN_loss = tf.reduce_mean(d_loss + g_loss)
 
             # Classification accuracy
-            correct_prediction = tf.equal(tf.argmax(d_real_logits[:, :-1], 1), tf.argmax(self.label,1))
+            correct_prediction = tf.equal(tf.argmax(d_real[:, :-1], 1), tf.argmax(self.label,1))
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             return s_loss, d_loss_real, d_loss_fake, d_loss, g_loss, GAN_loss, accuracy
         # }}}
@@ -130,7 +128,7 @@ class Model(object):
                 if not reuse: print (scope.name, d_4)
                 output = d_4
                 assert output.get_shape().as_list() == [self.batch_size, n+1]
-                return tf.nn.sigmoid(output), output
+                return tf.nn.softmax(output), output
 
         # Generator {{{
         # =========
@@ -148,7 +146,7 @@ class Model(object):
         # }}}
 
         self.S_loss, d_loss_real, d_loss_fake, self.d_loss, self.g_loss, GAN_loss, self.accuracy = \
-            build_loss(d_real, d_real_logits, d_fake, d_fake_logits, self.label)
+            build_loss(d_real, d_real_logits, d_fake, d_fake_logits, self.label, self.image, fake_image)
 
         tf.summary.scalar("loss/accuracy", self.accuracy)
         tf.summary.scalar("loss/GAN_loss", GAN_loss)

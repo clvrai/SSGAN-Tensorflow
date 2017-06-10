@@ -155,9 +155,10 @@ class Trainer(object):
             if s % output_save_step == 0:
                 log.infov("Saved checkpoint at %d", s)
                 save_path = self.saver.save(self.session, os.path.join(self.train_dir, 'model'), global_step=step)
-                f = h5py.File(os.path.join(self.train_dir, 'g_img_'+str(s)+'.hy'), 'w')
-                f['image'] = g_img
-                f.close()
+                if self.config.dump_result:
+                    f = h5py.File(os.path.join(self.train_dir, 'g_img_'+str(s)+'.hy'), 'w')
+                    f['image'] = g_img
+                    f.close()
 
     def run_single_step(self, batch, step=None, is_train=True):
         _start_time = time.time()
@@ -225,6 +226,7 @@ def main():
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--update_rate', type=int, default=5)
     parser.add_argument('--lr_weight_decay', action='store_true', default=False)
+    parser.add_argument('--dump_result', action='store_true', default=False)
     config = parser.parse_args()
 
     if config.dataset == 'MNIST':
