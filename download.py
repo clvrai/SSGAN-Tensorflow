@@ -127,6 +127,7 @@ def download_svhn(download_path):
     subprocess.call(cmd)
 
 def download_cifar10(download_path):
+    data_dir = os.path.join(download_path, 'cifar10')
 
     # cifar file loader
     def unpickle(file):
