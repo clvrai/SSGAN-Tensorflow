@@ -212,11 +212,6 @@ G_loss
 * My implementation of [Deep Convolutional Generative Adversarial Networks](https://github.com/shaohua0116/DCGAN-Tensorflow) in Tensorflow
 * The architecture diagram is modified from the one drawn in [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434)
 
-
-Shao-Hua Sun / [@shaohua0116](https://shaohua0116.github.io/)
-
-Jongwook Choi / [@wookayin](https://github.com/wookayin/)
-
 ## Acknowledgement
 
 Part of codes is from an unpublished project with [Jongwook Choi](https://github.com/wookayin)
