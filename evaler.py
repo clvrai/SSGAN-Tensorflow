@@ -8,6 +8,7 @@ import numpy as np
 from util import log
 from pprint import pprint
 
+from model import Model
 from input_ops import create_input_ops, check_data_id
 
 import os
@@ -47,18 +48,6 @@ class EvalManager(object):
         log.infov("Average accuracy : %.4f", avg*100)
 
 class Evaler(object):
-
-    @staticmethod
-    def get_model_class(model_name):
-        if model_name == 'mlp':
-            from model_mlp import Model
-        if model_name == 'conv':
-            from model_conv import Model
-        else:
-            return ValueError(model_name)
-        return Model
-
-
     def __init__(self,
                  config,
                  dataset):
@@ -78,7 +67,6 @@ class Evaler(object):
                                          shuffle=False)
 
         # --- create model ---
-        Model = self.get_model_class(config.model)
         self.model = Model(config)
 
         self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)
