@@ -52,6 +52,8 @@ $ python evaler.py --dataset MNIST --checkpoint ckpt_dir
 $ python evaler.py --dataset SVHN --checkpoint ckpt_dir
 $ python evaler.py --dataset CIFAR10 --checkpoint ckpt_dir
 ```
+The *ckpt_dir* should be like: ```train_dir/default-MNIST_lr_0.0001_update_G5_D1-20170101-194957/model-1001```
+
 Train and test your own datasets:
 
 * Create a directory
