@@ -165,7 +165,7 @@ class Trainer(object):
 
         batch_chunk = self.session.run(batch)
 
-        fetch = [self.global_step, self.model.accuracy, self.summary_op, self.model.d_loss, self.model.g_loss, 
+        fetch = [self.global_step, self.model.accuracy, self.summary_op, self.model.d_loss, self.model.g_loss,
                  self.model.S_loss, self.model.all_preds, self.model.all_targets, self.model.fake_img, self.check_op]
 
         if step%(self.config.update_rate+1) > 0:

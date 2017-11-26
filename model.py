@@ -4,12 +4,11 @@ from __future__ import print_function
 
 
 import tensorflow as tf
-import tensorflow.contrib.rnn as rnn
-import tensorflow.contrib.layers as layers
 import tensorflow.contrib.slim as slim
 
-from ops import *
+from ops import conv2d, deconv2d, huber_loss
 from util import log
+
 
 class Model(object):
 
@@ -60,11 +59,8 @@ class Model(object):
     def build(self, is_train=True):
 
         n = self.num_class
-        h = self.input_height
-        w = self.input_width
         deconv_info = self.deconv_info
         conv_info = self.conv_info
-        c_dim = self.c_dim
         n_z = 100
 
         # build loss and accuracy {{{
@@ -88,7 +84,7 @@ class Model(object):
             GAN_loss = tf.reduce_mean(d_loss + g_loss)
 
             # Classification accuracy
-            correct_prediction = tf.equal(tf.argmax(d_real[:, :-1], 1), tf.argmax(self.label,1))
+            correct_prediction = tf.equal(tf.argmax(d_real[:, :-1], 1), tf.argmax(self.label, 1))
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
             return s_loss, d_loss_real, d_loss_fake, d_loss, g_loss, GAN_loss, accuracy
         # }}}
@@ -96,16 +92,16 @@ class Model(object):
         # G takes ramdon noise and tries to generate images [B, h, w, c]
         def G(z, scope='Generator'):
             with tf.variable_scope(scope) as scope:
-                print ('\033[93m'+scope.name+'\033[0m')
+                log.warn(scope.name)
                 z = tf.reshape(z, [self.batch_size, 1, 1, -1])
-                g_1 = deconv2d(z, deconv_info[0], is_train, name='g_1_deconv') 
-                print (scope.name, g_1)
+                g_1 = deconv2d(z, deconv_info[0], is_train, name='g_1_deconv')
+                log.info('{} {}'.format(scope.name, g_1))
                 g_2 = deconv2d(g_1, deconv_info[1], is_train, name='g_2_deconv')
-                print (scope.name, g_2)
+                log.info('{} {}'.format(scope.name, g_2))
                 g_3 = deconv2d(g_2, deconv_info[2], is_train, name='g_3_deconv')
-                print (scope.name, g_3)
-                g_4 = deconv2d(g_3, deconv_info[3], is_train, name='g_4_deconv', activation_fn='tanh')
-                print (scope.name, g_4)
+                log.info('{} {}'.format(scope.name, g_3))
+                g_4 = deconv2d(g_3, deconv_info[3], is_train, name='g_4_deconv', activation_fn=tf.tanh)
+                log.info('{} {}'.format(scope.name, g_4))
                 output = g_4
                 assert output.get_shape().as_list() == self.image.get_shape().as_list(), output.get_shape().as_list()
             return output
@@ -113,19 +109,19 @@ class Model(object):
         # D takes images as input and tries to output class label [B, n+1]
         def D(img, scope='Discriminator', reuse=True):
             with tf.variable_scope(scope, reuse=reuse) as scope:
-                if not reuse: print ('\033[93m'+scope.name+'\033[0m')
+                if not reuse: log.warn(scope.name)
                 d_1 = conv2d(img, conv_info[0], is_train, name='d_1_conv')
                 d_1 = slim.dropout(d_1, keep_prob=0.5, is_training=is_train, scope='d_1_conv/')
-                if not reuse: print (scope.name, d_1)
+                if not reuse: log.info('{} {}'.format(scope.name, d_1))
                 d_2 = conv2d(d_1, conv_info[1], is_train, name='d_2_conv')
                 d_2 = slim.dropout(d_2, keep_prob=0.5, is_training=is_train, scope='d_2_conv/')
-                if not reuse: print (scope.name, d_2)
+                if not reuse: log.info('{} {}'.format(scope.name, d_2))
                 d_3 = conv2d(d_2, conv_info[2], is_train, name='d_3_conv')
                 d_3 = slim.dropout(d_3, keep_prob=0.5, is_training=is_train, scope='d_3_conv/')
-                if not reuse: print (scope.name, d_3)
+                if not reuse: log.info('{} {}'.format(scope.name, d_3))
                 d_4 = slim.fully_connected(
                     tf.reshape(d_3, [self.batch_size, -1]), n+1, scope='d_4_fc', activation_fn=None)
-                if not reuse: print (scope.name, d_4)
+                if not reuse: log.info('{} {}'.format(scope.name, d_4))
                 output = d_4
                 assert output.get_shape().as_list() == [self.batch_size, n+1]
                 return tf.nn.softmax(output), output
@@ -158,6 +154,6 @@ class Model(object):
         tf.summary.image("img/fake", fake_image)
         tf.summary.image("img/real", self.image, max_outputs=1)
         tf.summary.image("label/target_real", tf.reshape(self.label, [1, self.batch_size, n, 1]))
-        tf.summary.image("label/pred_real", tf.reshape(d_real, [1, self.batch_size, n+1, 1]))
-        tf.summary.image("label/pred_fake", tf.reshape(d_fake, [1, self.batch_size, n+1, 1]))
-        print ('\033[93mSuccessfully loaded the model.\033[0m')
+        # tf.summary.image("label/pred_real", tf.reshape(d_real, [3, self.batch_size, n+1, 1]))
+        # tf.summary.image("label/pred_fake", tf.reshape(d_fake, [1, self.batch_size, n+1, 1]))
+        log.warn('\033[93mSuccessfully loaded the model.\033[0m')

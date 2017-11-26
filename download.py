@@ -1,6 +1,5 @@
 from __future__ import print_function
 import os
-import sys
 import tarfile
 import subprocess
 import argparse
@@ -10,24 +9,25 @@ import numpy as np
 parser = argparse.ArgumentParser(description='Download dataset for SSGAN.')
 parser.add_argument('--datasets', metavar='N', type=str, nargs='+', choices=['MNIST', 'SVHN', 'CIFAR10'])
 
+
 def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, shape=None):
 
     image = np.concatenate((train_image, test_image), axis=0).astype(np.uint8)
     label = np.concatenate((train_label, test_label), axis=0).astype(np.uint8)
 
-    print ('Preprocessing data...')
+    print('Preprocessing data...')
 
     import progressbar
-    from time import sleep
-    bar = progressbar.ProgressBar(maxval=100, \
-    widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+    bar = progressbar.ProgressBar(maxval=100,
+                                  widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                           progressbar.Percentage()])
     bar.start()
 
     f = h5py.File(os.path.join(data_dir, 'data.hy'), 'w')
     data_id = open(os.path.join(data_dir,'id.txt'), 'w')
     for i in range(image.shape[0]):
 
-        if i%(image.shape[0]/100)==0: 
+        if i%(image.shape[0]/100)==0:
             bar.update(i/(image.shape[0]/100))
 
         grp = f.create_group(str(i))
@@ -63,7 +63,7 @@ def download_mnist(download_path):
     data_url = 'http://yann.lecun.com/exdb/mnist/'
     keys = ['train-images-idx3-ubyte.gz', 'train-labels-idx1-ubyte.gz',
              't10k-images-idx3-ubyte.gz', 't10k-labels-idx1-ubyte.gz']
-    
+
     for k in keys:
         url = (data_url+k).format(**locals())
         target_path = os.path.join(data_dir, k)
@@ -73,7 +73,7 @@ def download_mnist(download_path):
         cmd = ['gzip', '-d', target_path]
         print('Unzip ', k)
         subprocess.call(cmd)
-    
+
     num_mnist_train = 60000
     num_mnist_test = 10000
 
@@ -116,11 +116,11 @@ def download_svhn(download_path):
 
     data_url = 'http://ufldl.stanford.edu/housenumbers/train_32x32.mat'
     train_image, train_label = svhn_loader(data_url, os.path.join(data_dir, 'train_32x32.mat'))
-    
+
     data_url = 'http://ufldl.stanford.edu/housenumbers/test_32x32.mat'
     test_image, test_label = svhn_loader(data_url, os.path.join(data_dir, 'test_32x32.mat'))
 
-    prepare_h5py(np.transpose(train_image, (3, 0, 1, 2)), train_label, 
+    prepare_h5py(np.transpose(train_image, (3, 0, 1, 2)), train_label,
                  np.transpose(test_image, (3, 0, 1, 2)), test_label, data_dir)
 
     cmd = ['rm', '-f', os.path.join(data_dir, '*.mat')]
