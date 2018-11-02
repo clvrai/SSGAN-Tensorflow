@@ -2,20 +2,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from six.moves import xrange
-import numpy as np
-
-from util import log
-from pprint import pprint
-
-from model import Model
-from input_ops import create_input_ops, check_data_id
-
 import os
 import time
-import numpy as np
-import tensorflow as tf
+from pprint import pprint
+
 import h5py
+import numpy as np
+from six.moves import xrange
+import tensorflow as tf
+
+from input_ops import create_input_ops, check_data_id
+from util import log
+from config import argparser
+
 
 class EvalManager(object):
 
@@ -48,10 +47,9 @@ class EvalManager(object):
         log.infov("Average accuracy : %.4f", avg*100)
 
 class Evaler(object):
-    def __init__(self,
-                 config,
-                 dataset):
+    def __init__(self, config, model, dataset):
         self.config = config
+        self.model = model
         self.train_dir = config.train_dir
         log.info("self.train_dir = %s", self.train_dir)
 
@@ -65,9 +63,6 @@ class Evaler(object):
                                          data_id=config.data_id,
                                          is_training=False,
                                          shuffle=False)
-
-        # --- create model ---
-        self.model = Model(config)
 
         self.global_step = tf.contrib.framework.get_or_create_global_step(graph=None)
         self.step_op = tf.no_op(name='step_no_op')
@@ -84,19 +79,19 @@ class Evaler(object):
         # --- checkpoint and monitoring ---
         self.saver = tf.train.Saver(max_to_keep=100)
 
-        self.checkpoint_path = config.checkpoint_path
-        if self.checkpoint_path is None and self.train_dir:
-            self.checkpoint_path = tf.train.latest_checkpoint(self.train_dir)
-        if self.checkpoint_path is None:
+        self.checkpoint = config.checkpoint
+        if self.checkpoint is None and self.train_dir:
+            self.checkpoint = tf.train.latest_checkpoint(self.train_dir)
+        if self.checkpoint is None:
             log.warn("No checkpoint is given. Just random initialization :-)")
             self.session.run(tf.global_variables_initializer())
         else:
-            log.info("Checkpoint path : %s", self.checkpoint_path)
+            log.info("Checkpoint path : %s", self.checkpoint)
 
     def eval_run(self):
         # load checkpoint
-        if self.checkpoint_path:
-            self.saver.restore(self.session, self.checkpoint_path)
+        if self.checkpoint:
+            self.saver.restore(self.session, self.checkpoint)
             log.info("Loaded from checkpoint!")
 
         log.infov("Start 1-epoch Inference and Evaluation")
@@ -160,31 +155,10 @@ class Evaler(object):
                )
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--model', type=str, default='conv', choices=['mlp', 'conv'])
-    parser.add_argument('--checkpoint_path', type=str)
-    parser.add_argument('--train_dir', type=str)
-    parser.add_argument('--dataset', type=str, default='CIFAR10', choices=['MNIST', 'SVHN', 'CIFAR10'])
-    parser.add_argument('--data_id', nargs='*', default=None)
-    config = parser.parse_args()
 
-    if config.dataset == 'MNIST':
-        import  datasets.mnist as dataset
-    elif config.dataset == 'SVHN':
-        import datasets.svhn as dataset
-    elif config.dataset == 'CIFAR10':
-        import datasets.cifar10 as dataset
-    else:
-        raise ValueError(config.dataset)
+    config, model, dataset_train, dataset_test = argparser(is_train=False)
 
-    config.data_info = dataset.get_data_info()
-    config.conv_info = dataset.get_conv_info()
-    config.deconv_info = dataset.get_deconv_info()
-    dataset_train, dataset_test = dataset.create_default_splits()
-
-    evaler = Evaler(config, dataset_test)
+    evaler = Evaler(config, model, dataset_test)
 
     log.warning("dataset: %s", config.dataset)
     evaler.eval_run()

@@ -23,7 +23,7 @@ def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, sha
                                            progressbar.Percentage()])
     bar.start()
 
-    f = h5py.File(os.path.join(data_dir, 'data.hy'), 'w')
+    f = h5py.File(os.path.join(data_dir, 'data.hdf5'), 'w')
     data_id = open(os.path.join(data_dir,'id.txt'), 'w')
     for i in range(image.shape[0]):
 
@@ -46,7 +46,7 @@ def prepare_h5py(train_image, train_label, test_image, test_label, data_dir, sha
 
 def check_file(data_dir):
     if os.path.exists(data_dir):
-        if os.path.isfile(os.path.join('data.hy')) and \
+        if os.path.isfile(os.path.join('data.hdf5')) and \
             os.path.isfile(os.path.join('id.txt')):
             return True
     else:

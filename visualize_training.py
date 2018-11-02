@@ -17,7 +17,7 @@ if not args.train_dir or not args.output_file:
     raise ValueError("Please specify train_dir and output_file")
 
 II = []
-for file in sorted(glob.glob(os.path.join(args.train_dir, "*.hy")), key=os.path.getmtime):
+for file in sorted(glob.glob(os.path.join(args.train_dir, "*.hdf5")), key=os.path.getmtime):
     print (file)
     f = h5py.File(file, 'r')
     I = np.zeros((args.n*args.h, args.n*args.w, args.c))

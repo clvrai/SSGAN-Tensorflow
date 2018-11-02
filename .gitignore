@@ -1,3 +1,4 @@
+.ropeproject/
 train_dir/
 datasets/mnist
 datasets/svhn
